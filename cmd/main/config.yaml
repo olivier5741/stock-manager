@@ -1,0 +1,588 @@
+stock: ["Main", "Arlon", "Bastogne", "Bièvre", "Dinant", "Libramont", "Marche", "Tintigny"]
+redist:
+- from: "Main"
+  to: ["Arlon", "Bastogne", "Bièvre", "Dinant", "Libramont", "Marche", "Tintigny"]
+prod:
+- id: "9310140"
+  name: Abaisse-langue
+  unit: unité
+  bulk: 100
+  room: 1
+  min: 10
+- id: "304000"
+  name: Aiguille jaune 0.30x13mm 30Gx½"
+  unit: unité
+  bulk: 100
+  room: 20
+  min: 100
+- id: "300800"
+  name: Aiguille bleue 0.60x25mm 23Gx1"
+  unit: unité
+  bulk: 100
+  room: 20
+  min: 100
+- id: "304432"
+  name: Aiguille verte 0.80x40mm 21gx1½"
+  unit: unité
+  bulk: 100
+  room: 20
+  min: 100
+- id: "304622"
+  name: Aiguille rose 1.20x40mm 18Gx1½"
+  unit: unité
+  bulk: 100
+  room: 20
+  min: 100
+- id: "36901"
+  name: Alcool dénaturé
+  unit: dl
+  bulk: 5
+  room: 1
+  min: 1
+- id: "9310212"
+  name: Attelle alu-mousse 19mm ZIMMER
+  unit: unité
+  bulk: 12
+  room: 1
+  min: 4
+- id: "43683"
+  name: Attelle grenouille alu-mousse L
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "43683"
+  name: Attelle grenouille alu-mousse M
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "43683"
+  name: Attelle grenouille alu-mousse S
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "4211001"
+  name: Bandage tubulaire doigt 1,5cmx20m
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "1583"
+  name: Bande Coban 75mmx4.5m chair
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 5
+- id: "20303"
+  name: Bande crêpe 10cmx4m cello
+  unit: unité
+  bulk: 20
+  room: 5
+  min: 20
+- id: "20301"
+  name: Bande crêpe 5cmx4m cello
+  unit: unité
+  bulk: 20
+  room: 5
+  min: 20
+- id: "412006"
+  name: Bande élastique cello 10cmx4m
+  unit: unité
+  bulk: 20
+  room: 5
+  min: 20
+- id: "412002"
+  name: Bande élastique cello 5cmx4m
+  unit: unité
+  bulk: 20
+  room: 5
+  min: 20
+- id: "412011"
+  name: Bande élastique vrac 5cmx4m
+  unit: unité
+  bulk: 20
+  room: 5
+  min: 40
+- id: "7149000"
+  name: Bande  taping Strappal 4cmx10m
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 3
+- id: 923010T
+  name: Bassin réniforme disposable en carton
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 5
+- id: "488501"
+  name: Champ stérile 38X45cm  non adhésif 50p
+  unit: unité
+  bulk: 50
+  room: 10
+  min: 20
+- id: "488250"
+  name: 'Champ stérile 50x60cm  troué  adhésif '
+  unit: unité
+  bulk: 75
+  room: 10
+  min: 20
+- id: "1050052"
+  name: Colle tissulaire Histoacryl
+  unit: unité
+  bulk: 5
+  room: 2
+  min: 10
+- id: "1050060"
+  name: Colle tissulaire Histoacryl Transparent
+  unit: unité
+  bulk: 5
+  room: 2
+  min: 10
+- id: "35492"
+  name: Compresse non stérile 5x5cm 8 plis, 17 fils
+  unit: unité
+  bulk: 100
+  room: 100
+  min: 100
+- id: "1279524"
+  name: Compresse stérile 10x10cm emballage par 2
+  unit: unité
+  bulk: 50
+  room: 15
+  min: 100
+- id: "1279531"
+  name: Compresse stérile 5x5cm emballage par 3
+  unit: unité
+  bulk: 30
+  room: 30
+  min: 150
+- id: "485507"
+  name: Compresses absorbantes 20cmx20cm
+  unit: unité
+  bulk: 50
+  room: 10
+  min: 25
+- id: "108123"
+  name: Doigtiers TV 2 doigts stérile
+  unit: unité
+  bulk: 100
+  room: 5
+  min: 1
+- id: 660H
+  name: Fil Ethilon  - 6/0
+  unit: unité
+  bulk: 36
+  room: 5
+  min: 5
+- id: EW319
+  name: Fil Ethilon  - 4/0
+  unit: unité
+  bulk: 36
+  room: 5
+  min: 20
+- id: EW320
+  name: Fil Ethilon  - 3/0
+  unit: unité
+  bulk: 36
+  room: 5
+  min: 20
+- id: JV395
+  name: Fil Vicryl décimale  - 3/0  75cm
+  unit: unité
+  bulk: 1
+  room: 5
+  min: 1
+- id: "0"
+  name: Gaine de stérilisation 10 cmx200m
+  unit: mètre
+  bulk: 200
+  room: 200
+  min: 200
+- id: 449504N
+  name: Gaine de stérilisation 15cmx200m
+  unit: mètre
+  bulk: 200
+  room: 200
+  min: 1
+- id: "127302"
+  name: Gant d'examen en latex poudré Large
+  unit: unité
+  bulk: 100
+  room: 1
+  min: 2
+- id: "127301"
+  name: Gant d'examen en latex poudré Medium
+  unit: unité
+  bulk: 100
+  room: 1
+  min: 2
+- id: "127300"
+  name: Gant d'examen en latex poudré Small
+  unit: unité
+  bulk: 100
+  room: 1
+  min: 2
+- id: "114800"
+  name: Gant latex stérile Taille 6
+  unit: unité
+  bulk: 50
+  room: 5
+  min: 25
+- id: "114803"
+  name: Gant latex stérile Taille 7.5
+  unit: unité
+  bulk: 50
+  room: 5
+  min: 25
+- id: "114804"
+  name: Gant latex stérile Taille 8
+  unit: unité
+  bulk: 50
+  room: 5
+  min: 25
+- id: "107202"
+  name: Gant vinyle Large poudré
+  unit: unité
+  bulk: 100
+  room: 1
+  min: 2
+- id: "107201"
+  name: Gant vinyle Medium poudré
+  unit: unité
+  bulk: 100
+  room: 1
+  min: 2
+- id: "107200"
+  name: Gant vinyle Small poudré
+  unit: unité
+  bulk: 100
+  room: 1
+  min: 2
+- id: SP2278
+  name: Gel hydroalcoolique 500ml
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "41248"
+  name: Gel lubrifiant KY
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 1
+- id: "740200"
+  name: Gobelet plastique blanc 180-200ml
+  unit: unité
+  bulk: 100
+  room: 10
+  min: 100
+- id: "421004"
+  name: Jersey coton 10cmx25m
+  unit: dm
+  bulk: 25
+  room: 10
+  min: 5
+- id: "421002"
+  name: Jersey coton 5cmx25m
+  unit: dm
+  bulk: 25
+  room: 10
+  min: 5
+- id: "421003"
+  name: Jersey coton 7cmx25m
+  unit: dm
+  bulk: 25
+  room: 10
+  min: 5
+- id: "801005"
+  name: Lame de bistouri stérile n°11
+  unit: unité
+  bulk: 100
+  room: 20
+  min: 100
+- id: "801009"
+  name: Lame de bistouri stérile n°15
+  unit: unité
+  bulk: 100
+  room: 20
+  min: 100
+- id: "2876"
+  name: 'Leukostrip 4x38mm  '
+  unit: unité
+  bulk: 50
+  room: 5
+  min: 50
+- id: LFBD8111.N
+  name: LIL alèses 40x60 cm extra
+  unit: unité
+  bulk: 35
+  room: 1
+  min: 10
+- id: LCGN9321-01.N
+  name: LIL gant de toilette disposable
+  unit: unité
+  bulk: 100
+  room: 10
+  min: 20
+- id: SCLEAN
+  name: Liquide ultrasons Sea Clean 1 l.
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 1
+- id: "23318"
+  name: Lomatuell H Tulle 10x10cm
+  unit: unité
+  bulk: 50
+  room: 5
+  min: 20
+- id: "36002"
+  name: Mèche de gaze ourlée 2cmx5m
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "311000"
+  name: Méfix 10cmx10m
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "66974940"
+  name: Mélolin  5x5cm
+  unit: unité
+  bulk: 100
+  room: 15
+  min: 100
+- id: "66974941"
+  name: Mélolin 10x10cm
+  unit: unité
+  bulk: 100
+  room: 10
+  min: 100
+- id: "1530"
+  name: Micropore 2.5cm
+  unit: unité
+  bulk: 12
+  room: 1
+  min: 6
+- id: "36195"
+  name: compresse oculaire
+  unit: unité
+  bulk: 12
+  room: 3
+  min: 12
+- id: "66000040"
+  name: Opsite flexifix 5cmx10m
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "66004978"
+  name: Opsite spray 100ml
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 1
+- id: "4209003"
+  name: Ouate orthopédique 10cm  6p
+  unit: unité
+  bulk: 1
+  room: 2
+  min: 1
+- id: MP5150HM
+  name: papier de table ritter
+  unit: unité
+  bulk: 12
+  room: 1
+  min: 10
+- id: MP5050GCC
+  name: papier de table  gynéco
+  unit: unité
+  bulk: 9
+  room: 1
+  min: 5
+- id: "406021"
+  name: Papier pour Electrocardiographe
+  unit: unité
+  bulk: 4
+  room: 1
+  min: 8
+- id: "0"
+  name: Plâtre de Paris 5cmx3m
+  unit: unité
+  bulk: 20
+  room: 2
+  min: 10
+- id: "420002"
+  name: Plâtre de Paris 10cmx3m
+  unit: unité
+  bulk: 20
+  room: 2
+  min: 10
+- id: "420003"
+  name: Plâtre de Paris 15cmx3m
+  unit: unité
+  bulk: 20
+  room: 2
+  min: 10
+- id: TSDIS1006
+  name: Poche à urine 2L 120cm vidangeable
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 1
+- id: 182H
+  name: Rasoir Wilkinson 1 lame
+  unit: unité
+  bulk: 100
+  room: 10
+  min: 30
+- id: "11002"
+  name: Raucocel Tampon nasal  45mm
+  unit: unité
+  bulk: 1
+  room: 2
+  min: 4
+- id: "11010"
+  name: Raucocel Tampon nasal  80mm
+  unit: unité
+  bulk: 1
+  room: 2
+  min: 4
+- id: "451004"
+  name: Ruban de stérilisation  autoclave
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "816939"
+  name: Sekusept Plus  Désinfectant instruments
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 1
+- id: BS10ES
+  name: Seringue Terumo 10ml
+  unit: unité
+  bulk: 100
+  room: 10
+  min: 100
+- id: BS02S
+  name: Seringue Terumo 2.5ml
+  unit: unité
+  bulk: 100
+  room: 10
+  min: 200
+- id: BS05S
+  name: Seringue Terumo 5ml
+  unit: unité
+  bulk: 100
+  room: 10
+  min: 200
+- id: "39101100100"
+  name: Serum physiologique 10ml
+  unit: unité
+  bulk: 10
+  room: 5
+  min: 20
+- id: "864014"
+  name: Serviette Eco Lucart
+  unit: unité
+  bulk: 3960
+  room: 100
+  min: 100
+- id: "841006"
+  name: Serviette type Kleenex
+  unit: unité
+  bulk: 100
+  room: 1
+  min: 5
+- id: "1213"
+  name: Sonde de foley  ch16 ballonnet (femme )
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "8340758"
+  name: Sonde de Tiemann ch16   in out (homme)
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "9816"
+  name: Sonde Tiemann ch16  ballonnet béquillée (homme)
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "8340669"
+  name: Sonde urinaire pour femme ch16   in out
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "10117"
+  name: Spéculum auriculaire gris 2.5mm
+  unit: unité
+  bulk: 250
+  room: 1
+  min: 100
+- id: "10118"
+  name: Spéculum auriculaire gris 4mm
+  unit: unité
+  bulk: 250
+  room: 1
+  min: 100
+- id: "1030000"
+  name: Spray de contact ecg 260ml
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 1
+- id: 0610R
+  name: Tampon alcoolisé
+  unit: unité
+  bulk: 100
+  room: 50
+  min: 50
+- id: "429005"
+  name: Tampon de gaze 30-40mm
+  unit: unité
+  bulk: 1000
+  room: 500
+  min: 500
+- id: 001C040
+  name: Test de grossesse
+  unit: unité
+  bulk: 1
+  room: 1
+  min: 2
+- id: "1008552"
+  name: Tigette urinaire Combur-7
+  unit: unité
+  bulk: 100
+  room: 100
+  min: 50
+- id: tintigny-asbl-1
+  name: tigettes fluorescéine
+  unit: unité
+  bulk: 100
+  room: 5
+  min: 30
+- id: tintigny-asbl-2
+  name: tigette glucomètre
+  unit: unité
+  bulk: 25
+  room: 25
+  min: 20
+- id: tintigny-asbl-3
+  name: ddsh spray désinfection de surface (médistore)
+  unit: unité/10
+  bulk: 10
+  room: 10
+  min: 5
+
