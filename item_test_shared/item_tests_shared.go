@@ -8,19 +8,22 @@ import (
 var (
 	AspK  = "aspirine"
 	Asp   = Prod(AspK)
-	Asp1  = Item{Asp, 1}
-	Asp5  = Item{Asp, 5}
-	Asp6  = Item{Asp, 6}
-	Asp8  = Item{Asp, 8}
-	Asp15 = Item{Asp, 15}
-	Asp20 = Item{Asp, 20}
+	Asp1  = Item{Asp, Val{1}}
+	Asp5  = Item{Asp, Val{5}}
+	Asp6  = Item{Asp, Val{6}}
+	Asp8  = Item{Asp, Val{8}}
+	Asp15 = Item{Asp, Val{15}}
+	Asp20 = Item{Asp, Val{20}}
 	IsoK  = "isobétadine"
 	Iso   = Prod(IsoK)
-	Iso0  = Item{Iso, 0}
-	Iso3  = Item{Iso, 3}
-	Iso7  = Item{Iso, 7}
-	Iso10 = Item{Iso, 10}
-	Iso20 = Item{Iso, 20}
+	Iso0  = Item{Iso, Val{0}}
+	Iso1  = Item{Iso, Val{1}}
+	Iso2  = Item{Iso, Val{2}}
+	Iso3  = Item{Iso, Val{3}}
+	Iso4  = Item{Iso, Val{4}}
+	Iso7  = Item{Iso, Val{7}}
+	Iso10 = Item{Iso, Val{10}}
+	Iso20 = Item{Iso, Val{20}}
 )
 
 func CheckItemVal(t *testing.T, got, ex Item) {

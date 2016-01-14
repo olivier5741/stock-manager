@@ -3,7 +3,6 @@ package stock
 import (
 	. "github.com/olivier5741/stock-manager/item"
 	. "github.com/olivier5741/stock-manager/skelet"
-	//	"log"
 )
 
 type Stock struct {
@@ -11,8 +10,8 @@ type Stock struct {
 	Items
 }
 
-func MakeStock(name string) Stock {
-	return Stock{name, Items{}}
+func MakeStock(name string) *Stock {
+	return &Stock{name, Items{}}
 }
 
 type Rename struct {
@@ -28,8 +27,12 @@ type ItemsAction struct {
 	Items
 }
 
-func FromActions(acts []interface{}) (stock Stock) {
-	stock = Stock{Items: Items{}}
+func (s Stock) Id() string {
+	return s.Name
+}
+
+func FromActions(acts []interface{}) (stock *Stock) {
+	stock = &Stock{Items: Items{}}
 	for _, act := range acts {
 		switch act := act.(type) {
 		case In:
@@ -48,7 +51,7 @@ func FromActions(acts []interface{}) (stock Stock) {
 	return
 }
 
-func (s Stock) SubmitIn(i InCmd) (e In, err error) {
+func (s *Stock) SubmitIn(i InCmd) (e In, err error) {
 	//log.Println("Stock before in")
 	//log.Println(s)
 	s.Items.Add(i.Items)
@@ -58,7 +61,7 @@ func (s Stock) SubmitIn(i InCmd) (e In, err error) {
 	return
 }
 
-func (s Stock) SubmitOut(o OutCmd) (e Out, err error) {
+func (s *Stock) SubmitOut(o OutCmd) (e Out, err error) {
 	//log.Println("Stock before out")
 	//log.Println(s)
 	s.Items.Sub(o.Items)
@@ -68,7 +71,7 @@ func (s Stock) SubmitOut(o OutCmd) (e Out, err error) {
 	return
 }
 
-func (s Stock) SubmitInventory(i InventoryCmd) (e Inventory, err error) {
+func (s *Stock) SubmitInventory(i InventoryCmd) (e Inventory, err error) {
 	//log.Println("Stock before inventory")
 	//log.Println(s)
 	s.Items = i.Items.Copy()
@@ -78,7 +81,7 @@ func (s Stock) SubmitInventory(i InventoryCmd) (e Inventory, err error) {
 	return
 }
 
-func (s Stock) RenameStock(r RenameCmd) (e Rename, err error) {
+func (s *Stock) RenameStock(r RenameCmd) (e Rename, err error) {
 	s.Name = r.Name
 	e = Rename{r.Name}
 	return

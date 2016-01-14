@@ -18,6 +18,22 @@ var (
 	inputDir   = "input"
 	outputDir  = "output"
 	yamlConfig = "config.yaml"
+
+	repo  = stock.MakeDummyStockRepository()
+	endPt = stock.EndPt{Db: repo}
+
+	stockRoute = func(t Ider) (ok bool, a AggAct, p EvtSrcPersister) {
+		switch t.(type) {
+		case InCmd:
+			return true, endPt.HandleIn, repo
+		case OutCmd:
+			return true, endPt.HandleOut, repo
+		case InventoryCmd:
+			return true, endPt.HandleInventory, repo
+		default:
+			return false, nil, nil
+		}
+	}
 )
 
 func panicOnErr(err error) {
@@ -40,17 +56,6 @@ func itemArrayToMap(items []Item) (out Items) {
 	return
 }
 
-var (
-	stockEndPt = stock.EndPt{stock.MakeDummyStockRepository()}
-	router     = FileInputRouter{
-		map[string]func(interface{}) error{
-			"in":  stockEndPt.HandleIn,
-			"out": stockEndPt.HandleOut,
-			"inv": stockEndPt.HandleInventory,
-		},
-	}
-)
-
 func main() {
 
 	config := Config{}
@@ -66,11 +71,11 @@ func main() {
 		return
 	}
 
-	router.Route(files)
+	RouteFile(files)
 
 	//Output
 	p := &stock.ProdInStockTable{Table: make(map[string]stock.ProdInStockLine)}
-	p.Parse(stockEndPt.StocksQuery())
+	p.Parse(endPt.StocksQuery())
 	//lines = append(lines, p.Table)
 
 	lines := [][]string{append([]string{"product"}, p.Stocks...)}
@@ -86,15 +91,14 @@ func main() {
 		log.Println(err2)
 		return
 	}
-	//log.Print(*p)
 
 }
 
 type FileInputRouter struct {
-	Routes map[string]func(cmd interface{}) error
+	Routes map[string]func(agg interface{}, cmd interface{}) (event interface{}, extEvent interface{}, err error)
 }
 
-func (f FileInputRouter) Route(files []os.FileInfo) {
+func RouteFile(files []os.FileInfo) {
 	for _, file := range files {
 		path, err1 := ParseFilename(file.Name())
 		if err1 != nil {
@@ -108,11 +112,7 @@ func (f FileInputRouter) Route(files []os.FileInfo) {
 			continue
 		}
 
-		err4 := f.Routes[path.Act](out)
-		if err4 != nil {
-			log.Println(err4)
-			continue
-		}
+		ExecuteCommand(Cmd{T: out, Route: stockRoute}, stock.Chain)
 	}
 }
 
@@ -127,7 +127,7 @@ func WriteCsvFile(lines [][]string, path string) error {
 	return w.Error()
 }
 
-func UnmarshalCsvFile(path Filename) (out interface{}, err error) {
+func UnmarshalCsvFile(path Filename) (out Ider, err error) {
 	f, err := os.Open(inputDir + "/" + path.String())
 	defer f.Close()
 	if err != nil {
