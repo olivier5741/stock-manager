@@ -5,6 +5,7 @@ import (
 	. "github.com/olivier5741/stock-manager/skelet"
 )
 
+// I deleted Unique persister interface...
 type EndPt struct {
 	db UniquePersister
 }

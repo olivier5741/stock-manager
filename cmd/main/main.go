@@ -36,18 +36,6 @@ var (
 	}
 )
 
-func panicOnErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func logOnErr(s string, err error, v ...interface{}) {
-	if err != nil {
-		fmt.Println(s, err, v)
-	}
-}
-
 func itemArrayToMap(items []Item) (out Items) {
 	out = Items{}
 	for _, item := range items {
@@ -56,41 +44,34 @@ func itemArrayToMap(items []Item) (out Items) {
 	return
 }
 
-func main() {
-
-	config := Config{}
-	err := GetConfigFromFile(yamlConfig, &config)
+func logIfErr(err error) {
 	if err != nil {
 		log.Println(err)
 		return
 	}
+}
+
+func main() {
+
+	config := Config{}
+	err := GetConfigFromFile(yamlConfig, &config)
+	logIfErr(err)
 
 	files, err1 := ioutil.ReadDir(inputDir)
-	if err1 != nil {
-		log.Println(err1)
-		return
-	}
+	logIfErr(err1)
 
 	RouteFile(files)
 
-	//Output
-	p := &stock.ProdInStockTable{Table: make(map[string]stock.ProdInStockLine)}
-	p.Parse(endPt.StocksQuery())
-	//lines = append(lines, p.Table)
+	// OUTPUT
+	// Left in stock
+	p := stock.MakeProdInStockTable()
+	r, err2 := endPt.StocksQuery()
+	logIfErr(err2)
 
-	lines := [][]string{append([]string{"product"}, p.Stocks...)}
-
-	for _, item := range p.Table {
-		line := []string{item.Prod}
-		line = append(line, item.Vals...)
-		lines = append(lines, line)
-	}
-
-	err2 := WriteCsvFile(lines, "stock1.csv")
-	if err2 != nil {
-		log.Println(err2)
-		return
-	}
+	p.Parse(r)
+	err3 := WriteCsvFile(p.ToProductStringLines(), "stock1.csv")
+	logIfErr(err3)
+	// To order
 
 }
 

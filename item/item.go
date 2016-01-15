@@ -70,6 +70,7 @@ func (its Items) Missing(exps Items) (out Items) {
 	return
 }
 
+// I don't think I'm using this function
 func (origs Items) Copy() (out Items) {
 	out = make(Items, len(origs))
 	for key, orig := range origs {

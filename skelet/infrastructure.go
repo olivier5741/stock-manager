@@ -5,13 +5,8 @@ import (
 	"log"
 )
 
-type UniquePersister interface {
-	Get() (agg interface{})
-	Put(agg interface{})
-}
-
 type EvtSrcPersister interface {
-	GetAll() (aggs []interface{}) // add error
+	GetAll() ([]Ider, error) // add error
 	Get(id string) (Ider, error)
 	Put(id string, event interface{}) error
 }
