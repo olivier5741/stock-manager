@@ -15,6 +15,7 @@ stock-manager-0.1/
   output/
     stock.csv             // L'état actuel du stock
     missing.csv           // Ce qu'il manque dans le stock (sur base de la valeur minimum des produits, à configurer dans *config.yaml*
+                          // Exprimé en unité et non en boîte
   config.yaml             // Fichier de configuration du système (les produits, leur nom *name*, valeur minimum *min*, le nombre par boîte *bulk*
   log                     // Fichier de log, pour consulter les éventuelles erreurs
   stock-manager-0.1.exe   // Lancer pour regénérer les output à partir des input
