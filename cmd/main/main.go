@@ -97,7 +97,7 @@ func main() {
 
 	log.SetOutput(f)
 	log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.ErrorLevel)
 
 	config := Config{}
 	err2 := GetConfigFromFile(yamlConfigFile, &config)
@@ -165,13 +165,19 @@ func RouteFile(files []os.FileInfo) {
 	for _, file := range files {
 		path, err1 := ParseFilename(file.Name())
 		if err1 != nil {
-			log.Println(err1)
+			log.WithFields(log.Fields{
+				"filename": file.Name(),
+				"err":      err1,
+			}).Error("Cannot parse filename")
 			continue
 		}
 
 		out, err3 := UnmarshalCsvFile(path)
 		if err3 != nil {
-			log.Println(err3)
+			log.WithFields(log.Fields{
+				"filename": file.Name(),
+				"err":      err3,
+			}).Error("Cannot unmarshal to csv")
 			continue
 		}
 
@@ -229,5 +235,5 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		return skelet.InventoryCmd{path.Stock, itemArrayToMap(its)}, nil
 
 	}
-	return nil, fmt.Errorf("No action found for : " + path.Act)
+	return nil, fmt.Errorf("No action found")
 }
