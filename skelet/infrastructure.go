@@ -2,7 +2,7 @@ package skelet
 
 import (
 	"fmt"
-	"log"
+	log "github.com/Sirupsen/logrus"
 )
 
 type EvtSrcPersister interface {
@@ -36,15 +36,16 @@ func ExecuteCommand(cmd Cmd, chain []func(cmd Cmd) Cmd) {
 
 func Error(cmd Cmd) Cmd {
 	if cmd.Err != nil {
-		log.Println(cmd.Err)
-		panic(cmd.Err)
+		log.WithFields(log.Fields{
+			"err": cmd.Err,
+			"cmd": cmd,
+		}).Panic("Error in command handling")
 	}
 	return cmd
 }
 
 func Get(cmd Cmd) Cmd {
 	cmd.Agg, cmd.Err = cmd.Persist.Get(cmd.T.Id())
-	log.Println(cmd.Agg)
 	return cmd
 }
 
@@ -56,8 +57,6 @@ func Act(cmd Cmd) Cmd {
 
 func Put(cmd Cmd) Cmd {
 	cmd.Err = cmd.Persist.Put(cmd.Agg.Id(), cmd.Event)
-	//	log.Println(cmd.Event)
-	//	log.Println(cmd.Agg)
 	return cmd
 }
 

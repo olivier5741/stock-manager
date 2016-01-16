@@ -11,16 +11,20 @@ type Item struct {
 	Val  Val
 }
 
+func (i Item) String() string {
+	return i.Prod.String() + ": " + i.Val.String()
+}
+
 type Val struct {
 	T int
 }
 
-func (v *Val) String() string {
+func (v Val) String() string {
 	return strconv.Itoa(int(v.T))
 }
 
-func (v *Val) MarshalCSV() (string, error) {
-	return "Cannot marshal this", nil
+func (v Val) MarshalCSV() (string, error) {
+	return string(v.T), nil
 }
 
 func (v *Val) UnmarshalCSV(csv string) error {
@@ -37,6 +41,10 @@ func (v *Val) UnmarshalCSV(csv string) error {
 }
 
 type Prod string
+
+func (p Prod) String() string {
+	return string(p)
+}
 
 func (its Items) Add(adds Items) {
 	for key, add := range adds {
@@ -65,6 +73,8 @@ func (its Items) Missing(exps Items) (out Items) {
 			if diff := exp.Val.T - it.Val.T; diff > 0 {
 				out[key] = Item{it.Prod, Val{diff}}
 			}
+		} else {
+			out[key] = Item{exp.Prod, Val{exp.Val.T}}
 		}
 	}
 	return
