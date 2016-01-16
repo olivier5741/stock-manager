@@ -4,7 +4,7 @@ Une simple gestion de stock via des fichiers .csv
 
 ## Directory Tree
 ```
-stock-manager-0.1
+stock-manager-0.1/
   input/
     2015-01-09-bievre-1-in.csv    // Bon d'entrée pour le stock de bièvre
     2015-01-09-libin-1-in.csv     // Bon d'entrée pour le stock de libin
