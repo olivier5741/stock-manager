@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	. "github.com/olivier5741/stock-manager/item"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,18 +12,6 @@ var (
 	csvSuff    = ".csv"
 	timeFormat = "2006-02-01"
 )
-
-func GetConfigFromFile(filename string, config interface{}) error {
-	b, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return fmt.Errorf("Cannot read file %q", filename)
-	}
-	return GetConfig(b, config)
-}
-
-func GetConfig(b []byte, config interface{}) error {
-	return yaml.Unmarshal(b, config)
-}
 
 func ParseFilename(s string) (f Filename, err error) {
 	f = Filename{}
@@ -83,6 +70,14 @@ type ConfigProd struct {
 	Id, Name, Unit  string
 	Bulk, Room, Min int
 	//	Dispo           ConfigDispo
+}
+
+func (c Config) GetMissingItems() (out Items) {
+	out = map[string]Item{}
+	for _, p := range c.Prod {
+		out[p.Name] = Item{Prod(p.Name), Val{p.Min * p.Bulk}}
+	}
+	return
 }
 
 type Filename struct {
