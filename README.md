@@ -1,6 +1,6 @@
 # stock-manager
 Une simple gestion de stock via des fichiers .csv 
-(';' comme séparateur, uniquement des nombres entiers, pas d'accent ni de caractère spécial). 
+(',' comme séparateur, uniquement des nombres entiers, pas d'accent ni de caractère spécial). 
 
 ## Directory Tree
 ```
