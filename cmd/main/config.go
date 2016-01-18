@@ -10,7 +10,7 @@ import (
 
 var (
 	csvSuff    = ".csv"
-	timeFormat = "2006-02-01"
+	timeFormat = "2006-01-02"
 )
 
 func ParseFilename(s string) (f Filename, err error) {
