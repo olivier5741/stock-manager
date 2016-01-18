@@ -192,7 +192,7 @@ func WriteCsvFile(lines [][]string, path string) error {
 		return err
 	}
 	w := csv.NewWriter(f)
-	w.Comma = ';'
+	//w.Comma = ';'
 
 	w.WriteAll(lines)
 	return w.Error()
@@ -207,7 +207,7 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
 	gocsv.SetCSVReader(func(out io.Reader) *csv.Reader {
 		r := csv.NewReader(out)
-		r.Comma = ';'
+		//r.Comma = ';'
 		return r
 	})
 
