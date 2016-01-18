@@ -13,18 +13,32 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
+	"time"
 )
 
 // ATTENTION : tout méthode qui modifie le struct doit accepter un pointer !! ??
 // Windows build :
 // GOOS=windows GOARCH=386 go build -o stock-manager-0.1.exe main.go config.go
 var (
-	inputDir       = "input"
-	outputDir      = "output"
-	yamlConfigFile = "config.yaml"
-	logfile        = "log"
-	dashboardfile  = "stock.csv"
-	orderfile      = "missing.csv"
+	dir = "Bièvre"
+
+	extension       = ".csv"
+	configPrefix    = "c-"
+	generatedPrefix = "g-"
+	loggingPrefix   = "l-"
+	draftSuffix     = "-en attente" + extension
+	numberPrefix    = "n°"
+
+	configFilename = configPrefix + "config.csv"
+	logfile        = loggingPrefix + "erreurs"
+	dashboardfile  = generatedPrefix + "stock" + extension
+	orderfile      = generatedPrefix + "à commander" + extension
+
+	inventoryFilename = "inventaire"
+	inFilename        = "entrée"
+	outFilename       = "sortie"
+	orderFilename     = "commande"
 
 	cannotOpenFile = "Cannot open file"
 
@@ -78,15 +92,11 @@ func GetConfigFromFile(filename string, config interface{}) error {
 func main() {
 
 	// setup environment if not exist
-	if _, err := os.Stat(inputDir); os.IsNotExist(err) {
-		os.Mkdir(inputDir, 0755)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0755)
 	}
 
-	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
-		os.Mkdir(outputDir, 0755)
-	}
-
-	f, err1 := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	f, err1 := os.OpenFile(dir+"/"+logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err1 != nil {
 		log.WithFields(log.Fields{
 			"filename": logfile,
@@ -97,23 +107,32 @@ func main() {
 
 	log.SetOutput(f)
 	log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.ErrorLevel)
+	log.SetLevel(log.DebugLevel)
 
-	config := Config{}
-	err2 := GetConfigFromFile(yamlConfigFile, &config)
+	config := make([]ConfigProd, 0)
+	configFile, err2 := os.OpenFile(dir+"/"+configFilename, os.O_CREATE, 0666)
+	defer configFile.Close()
 	if err2 != nil {
 		log.WithFields(log.Fields{
-			"filename": yamlConfigFile,
+			"filename": configFilename,
 			"err":      err2,
-		}).Error("Cannot get config from yaml file")
+		}).Error(cannotOpenFile)
 	}
 
-	//log.Debug(config)
+	err2a := gocsv.UnmarshalFile(configFile, &config)
 
-	files, err3 := ioutil.ReadDir(inputDir)
+	if err2a != nil {
+		log.WithFields(log.Fields{
+			"filename": configFilename,
+			"err":      err2a,
+		}).Error("Cannot get config from csv file")
+	}
+
+	files, err3 := ioutil.ReadDir(dir)
+
 	if err3 != nil {
 		log.WithFields(log.Fields{
-			"dir": inputDir,
+			"dir": dir,
 			"err": err3,
 		}).Error("Cannot read directory")
 	}
@@ -124,6 +143,7 @@ func main() {
 	// Left in stock
 	p := stock.MakeProdInStockTable()
 	r, err4 := endPt.StocksQuery()
+	inventory := r[0].Items.Copy()
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
@@ -143,9 +163,10 @@ func main() {
 	mt := stock.MakeProdInStockTable()
 	m := make([]*Stock, 0)
 	for _, s := range r {
-		s.Items = s.Items.Missing(config.GetMissingItems())
+		s.Items = s.Items.Missing(GetMissingItems(config))
 		m = append(m, s)
 	}
+	order := m[0].Items.Copy()
 	mt.Parse(m)
 	err6 := WriteCsvFile(mt.ToProductStringLines(), orderfile)
 	if err6 != nil {
@@ -155,6 +176,51 @@ func main() {
 		}).Error("Cannot write csv file")
 	}
 
+	// Create missing files
+	today := time.Now().Format("2006-01-02")
+	inDraftFilename := today + "-" + numberPrefix + "1-" + inFilename + draftSuffix
+	outDraftFilename := today + "-" + numberPrefix + "2-" + outFilename + draftSuffix
+	invDraftFilename := today + "-" + numberPrefix + "3-" + inventoryFilename + draftSuffix
+	orderDraftFilename := today + "-" + numberPrefix + "4-" + orderFilename + draftSuffix
+
+	log.Debug(m[0].Items.ToStringLines())
+
+	createDateOrUpdateDate(inDraftFilename, today, addHeader(ToItemStringLines(config)))
+	createDateOrUpdateDate(outDraftFilename, today, addHeader(ToItemStringLines(config)))
+	createDateOrUpdateDate(invDraftFilename, today, addHeader(inventory.ToStringLines()))
+	createDateOrUpdateDate(orderDraftFilename, today, addHeader(order.ToStringLines()))
+}
+
+func addHeader(ins [][]string) [][]string {
+	out := [][]string{[]string{"Prod", "Val"}}
+	for _, in := range ins {
+		out = append(out, in)
+	}
+	return out
+}
+
+func createDateOrUpdateDate(filename string, today string, lines [][]string) {
+	filename = dir + "/" + filename
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		f, err1 := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err1 != nil {
+			log.WithFields(log.Fields{
+				"filename": filename,
+				"err":      err1,
+			}).Error(cannotOpenFile)
+		}
+
+		defer f.Close()
+
+		w := csv.NewWriter(f)
+		w.WriteAll(lines)
+		if w.Error() != nil {
+			log.WithFields(log.Fields{
+				"filename": filename,
+				"err":      w.Error(),
+			}).Error("Cannot write csv to file")
+		}
+	}
 }
 
 type FileInputRouter struct {
@@ -163,6 +229,13 @@ type FileInputRouter struct {
 
 func RouteFile(files []os.FileInfo) {
 	for _, file := range files {
+		// TO REFACTOR
+		if strings.HasPrefix(file.Name(), configPrefix) ||
+			strings.HasPrefix(file.Name(), generatedPrefix) ||
+			strings.HasPrefix(file.Name(), loggingPrefix) ||
+			strings.HasSuffix(file.Name(), draftSuffix) {
+			return
+		}
 		path, err1 := ParseFilename(file.Name())
 		if err1 != nil {
 			log.WithFields(log.Fields{
@@ -186,7 +259,7 @@ func RouteFile(files []os.FileInfo) {
 }
 
 func WriteCsvFile(lines [][]string, path string) error {
-	f, err := os.Create(outputDir + "/" + path)
+	f, err := os.Create(dir + "/" + path)
 	defer f.Close()
 	if err != nil {
 		return err
@@ -199,7 +272,7 @@ func WriteCsvFile(lines [][]string, path string) error {
 }
 
 func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
-	f, err := os.Open(inputDir + "/" + path.String())
+	f, err := os.Open(dir + "/" + path.String())
 	defer f.Close()
 	if err != nil {
 		return nil, err
@@ -212,21 +285,21 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 	})
 
 	switch path.Act {
-	case "in":
+	case inFilename:
 		its := []Item{}
 		err := gocsv.UnmarshalFile(f, &its)
 		if err != nil {
 			return nil, err
 		}
 		return skelet.InCmd{path.Stock, itemArrayToMap(its)}, nil
-	case "out":
+	case outFilename:
 		its := []Item{}
 		err := gocsv.UnmarshalFile(f, &its)
 		if err != nil {
 			return nil, err
 		}
 		return skelet.OutCmd{path.Stock, itemArrayToMap(its)}, nil
-	case "inv":
+	case inventoryFilename:
 		its := []Item{}
 		err := gocsv.UnmarshalFile(f, &its)
 		if err != nil {

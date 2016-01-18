@@ -88,3 +88,13 @@ func (origs Items) Copy() (out Items) {
 	}
 	return
 }
+
+func (its Items) ToStringLines() (out [][]string) {
+	out = make([][]string, len(its))
+	line := 0
+	for _, i := range its {
+		out[line] = []string{i.Prod.String(), i.Val.String()}
+		line++
+	}
+	return
+}

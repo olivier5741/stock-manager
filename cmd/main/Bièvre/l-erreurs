@@ -1,0 +1,49 @@
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:01:38+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:01:38+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:01:38+01:00"}
+{"level":"debug","msg":"[[isobétadine 57] [aspirine 49]]","time":"2016-01-18T19:01:38+01:00"}
+{"err":"write Bièvre/2016-01-18-n°3-inventaire-en attente.csv: bad file descriptor","filename":"Bièvre/2016-01-18-n°3-inventaire-en attente.csv","level":"error","msg":"Cannot write csv to file","time":"2016-01-18T19:01:38+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:03:18+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:03:18+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:03:18+01:00"}
+{"level":"debug","msg":"[[aspirine 49] [isobétadine 57]]","time":"2016-01-18T19:03:18+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:03:32+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:03:32+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:03:32+01:00"}
+{"level":"debug","msg":"[[aspirine 49] [isobétadine 57]]","time":"2016-01-18T19:03:32+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:06:40+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:06:40+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:06:40+01:00"}
+{"level":"debug","msg":"[[isobétadine 57] [aspirine 49]]","time":"2016-01-18T19:06:40+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:07:11+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:07:11+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:07:11+01:00"}
+{"level":"debug","msg":"[[aspirine 49] [isobétadine 57]]","time":"2016-01-18T19:07:11+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:08:33+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:08:33+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:08:33+01:00"}
+{"level":"debug","msg":"[[isobétadine 57] [aspirine 49]]","time":"2016-01-18T19:08:33+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:12:57+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:12:57+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:12:57+01:00"}
+{"level":"debug","msg":"[[isobétadine 57] [aspirine 49]]","time":"2016-01-18T19:12:57+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:13:09+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:13:09+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:13:09+01:00"}
+{"level":"debug","msg":"[[isobétadine 57] [aspirine 49]]","time":"2016-01-18T19:13:09+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:21:55+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:21:55+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:21:55+01:00"}
+{"level":"debug","msg":"[[isobétadine 57] [aspirine 49]]","time":"2016-01-18T19:21:55+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:22:33+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:22:33+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:22:33+01:00"}
+{"level":"debug","msg":"[[isobétadine 57] [aspirine 49]]","time":"2016-01-18T19:22:33+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:37:06+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:37:06+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:37:06+01:00"}
+{"level":"debug","msg":"[[isobétadine 57] [aspirine 49]]","time":"2016-01-18T19:37:06+01:00"}
+{"err":"No action found","filename":"2015-01-12-n°2-commande.csv","level":"error","msg":"Cannot unmarshal to csv","time":"2016-01-18T19:37:21+01:00"}
+{"level":"debug","msg":"{iso isobétadine 40 9}","time":"2016-01-18T19:37:21+01:00"}
+{"level":"debug","msg":"{aspi aspirine 50 10}","time":"2016-01-18T19:37:21+01:00"}
+{"level":"debug","msg":"[[aspirine 49] [isobétadine 57]]","time":"2016-01-18T19:37:21+01:00"}

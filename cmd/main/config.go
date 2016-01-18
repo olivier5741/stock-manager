@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	. "github.com/olivier5741/stock-manager/item"
 	"path/filepath"
 	"strings"
@@ -26,8 +27,8 @@ func ParseFilename(s string) (f Filename, err error) {
 	ts := strings.TrimSuffix(s, f.Ext)
 
 	args := strings.Split(ts, "-")
-	if l := len(args); l != 6 {
-		err = fmt.Errorf("There should be 6 hyphen seperated args in %q", s)
+	if l := len(args); l != 5 && l != 6 {
+		err = fmt.Errorf("There should be 5 or 6 hyphen seperated args in %q", s)
 		return
 	}
 
@@ -39,53 +40,56 @@ func ParseFilename(s string) (f Filename, err error) {
 	f.Date = date
 
 	//Stock
-	f.Stock = args[3]
+	//f.Stock = args[3]
+	f.Stock = "bievre" //To refactor
 
 	//Id
-	f.Id = args[4]
+	f.Id = strings.TrimPrefix(args[3], "n°")
 
 	//Action
-	f.Act = args[5]
+	f.Act = args[4]
+
+	if len(args) == 6 {
+		f.Status = args[5]
+	}
 
 	return
 }
 
-type Config struct {
-	Stock  []string
-	Redist []ConfigRedist
-	Prod   []ConfigProd
-}
-
-type ConfigRedist struct {
-	From string
-	To   []string
-}
-
-type ConfigDispo struct {
-	Ok  bool
-	Pmg []string
-}
-
 type ConfigProd struct {
-	Id, Name, Unit  string
-	Bulk, Room, Min int
-	//	Dispo           ConfigDispo
+	Id, Name  string
+	Bulk, Min int
 }
 
-func (c Config) GetMissingItems() (out Items) {
+func GetMissingItems(c []ConfigProd) (out Items) {
 	out = map[string]Item{}
-	for _, p := range c.Prod {
+	for _, p := range c {
 		out[p.Name] = Item{Prod(p.Name), Val{p.Min * p.Bulk}}
+
+		log.Debug(p)
+	}
+	return
+}
+
+func ToItemStringLines(prods []ConfigProd) (out [][]string) {
+	out = make([][]string, len(prods))
+	for i, prod := range prods {
+		out[i] = []string{prod.Name, ""}
 	}
 	return
 }
 
 type Filename struct {
-	Date                time.Time
-	Stock, Act, Id, Ext string
+	Date                        time.Time
+	Stock, Act, Id, Ext, Status string
 }
 
 func (f Filename) String() string {
-	s := f.Date.Format(timeFormat) + "-" + f.Stock + "-" + f.Id + "-" + f.Act + f.Ext
+	s := f.Date.Format(timeFormat) + "-n°" + f.Id + "-" + f.Act
+	if f.Status != "" {
+		s = s + "-" + f.Status
+	}
+	s = s + f.Ext
+
 	return s
 }
