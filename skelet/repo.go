@@ -25,6 +25,14 @@ func (r DumEvtRepo) GetAll() (aggs []Ider, err error) {
 	return
 }
 
+func (r DumEvtRepo) GetAllEvents(id string) (events []interface{}) {
+	events, ok := r.db[id]
+	if !ok {
+		events = make([]interface{}, 0) // not sure I need this
+	}
+	return
+}
+
 func (r DumEvtRepo) Get(id string) (Ider, error) {
 	events, ok := r.db[id]
 	if !ok {

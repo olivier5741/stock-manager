@@ -4,13 +4,17 @@ import (
 	"fmt"
 	. "github.com/olivier5741/stock-manager/item"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 var (
 	csvSuff    = ".csv"
-	timeFormat = "2006-01-02"
+	TimeFormat = "2006-01-02"
 )
 
 func ParseFilename(s string) (f Filename, err error) {
@@ -37,7 +41,7 @@ func ParseFilename(s string) (f Filename, err error) {
 	}
 
 	//Date
-	date, err := time.Parse(timeFormat, args[0]+"-"+args[1]+"-"+args[2])
+	date, err := time.Parse(TimeFormat, args[0]+"-"+args[1]+"-"+args[2])
 	if err != nil {
 		return
 	}
@@ -81,13 +85,58 @@ func ToItemStringLines(prods []ConfigProd) (out [][]string) {
 	return
 }
 
+func ItemsEvolutionView(in map[string]Items) (out [][]string) {
+	keys := make(sort.StringSlice, 0)
+
+	for k, _ := range in {
+		keys = append(keys, k)
+	}
+	keys.Sort()
+
+	outmap := make(map[string][]string, 0)
+
+	b := 0
+	for _, date := range keys {
+		for _, item := range in[date] {
+			outmap[item.Prod.String()] = append(outmap[item.Prod.String()], item.Val.String())
+		}
+
+		// regularize map
+		for k, v := range outmap {
+			if len(v) == 0 {
+				outmap[k] = append(v, strconv.Itoa(0))
+			} else {
+				if len(v) != b+1 {
+					outmap[k] = append(v, v[len(v)-1])
+				}
+			}
+
+		}
+		b++
+	}
+
+	headers := make([]string, len(keys))
+	for _, k := range keys {
+		headers = append(headers, k)
+	}
+
+	out = [][]string{append([]string{"Prod"}, keys...)}
+	for k, v := range outmap {
+		out = append(out, append([]string{k}, v...))
+	}
+
+	log.Debug(out)
+
+	return
+}
+
 type Filename struct {
 	Date                        time.Time
 	Stock, Act, Id, Ext, Status string
 }
 
 func (f Filename) String() string {
-	s := f.Date.Format(timeFormat) + "-n°" + f.Id + "-" + f.Act
+	s := f.Date.Format(TimeFormat) + "-n°" + f.Id + "-" + f.Act
 	if f.Status != "" {
 		s = s + "-" + f.Status
 	}

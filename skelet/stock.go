@@ -15,6 +15,7 @@ type RenameCmd struct {
 type ItemsCmd struct {
 	StockName string
 	Items
+	Date string
 }
 
 // code duplication !! Initialization is different when type is composed

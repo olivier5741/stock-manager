@@ -29,10 +29,11 @@ var (
 	draftPrefix     = "brouillon"
 	numberPrefix    = "n°"
 
-	configFilename = configPrefix + "config.csv"
-	logfile        = loggingPrefix + "erreurs"
-	dashboardfile  = generatedPrefix + "stock" + extension
-	orderfile      = generatedPrefix + "à commander" + extension
+	configFilename     = configPrefix + "config.csv"
+	logfile            = loggingPrefix + "erreurs"
+	dashboardfile      = generatedPrefix + "stock" + extension
+	orderfile          = generatedPrefix + "à commander" + extension
+	itemsEvolutionFile = generatedPrefix + "produits" + extension
 
 	inventoryFilename = "inventaire"
 	inFilename        = "entrée"
@@ -149,17 +150,8 @@ func inStock(config []ConfigProd) (its Items) {
 	return
 }
 
-func missing(config []ConfigProd, s Items) (its Items) {
-
-	its = s.Missing(GetMissingItems(config))
-
-	for _, prod := range config {
-		if _, ok := its[prod.Name]; !ok {
-			its[prod.Name] = Item{Prod(prod.Name), Val{0}}
-		}
-	}
-
-	return
+func missing(config []ConfigProd, s Items) Items {
+	return s.Missing(GetMissingItems(config))
 }
 
 func main() {
@@ -217,6 +209,17 @@ func main() {
 	createDateOrUpdateDate(outDraftFilename, today, addHeader(ToItemStringLines(config)))
 	createDateOrUpdateDate(invDraftFilename, today, addHeader(inventory.ToStringLines()))
 	createDateOrUpdateDate(orderDraftFilename, today, addHeader(order.ToStringLines()))
+
+	a := endPt.ProdValEvolution("bievre")
+	log.Debug(a)
+	data := ItemsEvolutionView(a)
+	err7 := WriteCsvFile(data, itemsEvolutionFile)
+	if err7 != nil {
+		log.WithFields(log.Fields{
+			"filename": itemsEvolutionFile,
+			"err":      err7,
+		}).Error("Cannot write csv file")
+	}
 }
 
 func addHeader(ins [][]string) [][]string {
@@ -296,7 +299,7 @@ func WriteCsvFile(lines [][]string, path string) error {
 	}
 	w := csv.NewWriter(f)
 	//w.Comma = ';'
-
+	log.Debug(lines)
 	w.WriteAll(lines)
 	return w.Error()
 }
@@ -321,21 +324,21 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		if err != nil {
 			return nil, err
 		}
-		return skelet.InCmd{path.Stock, itemArrayToMap(its)}, nil
+		return skelet.InCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + "-" + numberPrefix + path.Id}, nil
 	case outFilename:
 		its := []Item{}
 		err := gocsv.UnmarshalFile(f, &its)
 		if err != nil {
 			return nil, err
 		}
-		return skelet.OutCmd{path.Stock, itemArrayToMap(its)}, nil
+		return skelet.OutCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + "-" + numberPrefix + path.Id}, nil
 	case inventoryFilename:
 		its := []Item{}
 		err := gocsv.UnmarshalFile(f, &its)
 		if err != nil {
 			return nil, err
 		}
-		return skelet.InventoryCmd{path.Stock, itemArrayToMap(its)}, nil
+		return skelet.InventoryCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + "-" + numberPrefix + path.Id}, nil
 
 	}
 	return nil, fmt.Errorf("No action found")

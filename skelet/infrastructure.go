@@ -6,7 +6,8 @@ import (
 )
 
 type EvtSrcPersister interface {
-	GetAll() ([]Ider, error) // add error
+	GetAll() ([]Ider, error)
+	GetAllEvents(id string) (events []interface{}) // add error later
 	Get(id string) (Ider, error)
 	Put(id string, event interface{}) error
 }
@@ -15,7 +16,12 @@ type Ider interface {
 	Id() string
 }
 
-type AggAct func(agg interface{}, cmd interface{}) (event interface{}, extEvent interface{}, err error)
+type Event struct {
+	Date string
+	Act  interface{}
+}
+
+type AggAct func(agg interface{}, cmd interface{}) (event Event, extEvent interface{}, err error)
 
 type Cmd struct {
 	T        Ider

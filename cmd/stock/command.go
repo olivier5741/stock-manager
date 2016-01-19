@@ -7,44 +7,44 @@ import (
 	"time"
 )
 
-func (endPt *EndPt) HandleIn(agg interface{}, cmd interface{}) (event interface{}, extEvent interface{}, err error) {
+func (endPt *EndPt) HandleIn(agg interface{}, cmd interface{}) (event Event, extEvent interface{}, err error) {
 	stock := agg.(*Stock)
 	cmdIn := cmd.(InCmd)
 
 	in, err := stock.SubmitIn(cmdIn)
 	if err != nil {
-		return nil, nil, err
+		return Event{}, nil, err
 	}
 
-	return in, InSubmitted{
+	return Event{cmdIn.Date, in}, InSubmitted{
 		StockEvent{stock.Name, time.Now()},
 		in.Items, stock.Items}, nil
 }
 
-func (endPt *EndPt) HandleOut(agg interface{}, cmd interface{}) (event interface{}, extEvent interface{}, err error) {
+func (endPt *EndPt) HandleOut(agg interface{}, cmd interface{}) (event Event, extEvent interface{}, err error) {
 	stock := agg.(*Stock)
 	cmdOut := cmd.(OutCmd)
 
 	out, err := stock.SubmitOut(cmdOut)
 	if err != nil {
-		return nil, nil, err
+		return Event{}, nil, err
 	}
 
-	return out, OutSubmitted{
+	return Event{cmdOut.Date, out}, OutSubmitted{
 		StockEvent{stock.Name, time.Now()},
 		out.Items, stock.Items}, nil
 }
 
-func (endPt *EndPt) HandleInventory(agg interface{}, cmd interface{}) (event interface{}, extEvent interface{}, err error) {
+func (endPt *EndPt) HandleInventory(agg interface{}, cmd interface{}) (event Event, extEvent interface{}, err error) {
 	stock := agg.(*Stock)
 	cmdInv := cmd.(InventoryCmd)
 
 	inv, err := stock.SubmitInventory(cmdInv)
 	if err != nil {
-		return nil, nil, err
+		return Event{}, nil, err
 	}
 
-	return inv, InventorySubmitted{
+	return Event{cmdInv.Date, inv}, InventorySubmitted{
 		StockEvent{stock.Name, time.Now()},
 		inv.Items, stock.Items}, nil
 }
