@@ -26,7 +26,7 @@ var (
 	configPrefix    = "c-"
 	generatedPrefix = "g-"
 	loggingPrefix   = "l-"
-	draftSuffix     = "-en attente" + extension
+	draftPrefix     = "brouillon"
 	numberPrefix    = "n°"
 
 	configFilename = configPrefix + "config.csv"
@@ -134,9 +134,6 @@ func inStock(config []ConfigProd) (its Items) {
 		}).Error("Cannot execute stock query")
 	}
 
-	log.Debug("IN STOCK")
-	log.Debug(stocks[0].Items.Copy())
-
 	if len(stocks) > 0 {
 		its = stocks[0].Items.Copy()
 	} else {
@@ -211,10 +208,10 @@ func main() {
 
 	// Create missing files
 	today := time.Now().Format("2006-01-02")
-	inDraftFilename := today + "-" + numberPrefix + "1-" + inFilename + draftSuffix
-	outDraftFilename := today + "-" + numberPrefix + "2-" + outFilename + draftSuffix
-	invDraftFilename := today + "-" + numberPrefix + "3-" + inventoryFilename + draftSuffix
-	orderDraftFilename := today + "-" + numberPrefix + "4-" + orderFilename + draftSuffix
+	inDraftFilename := draftPrefix + "-" + today + "-" + numberPrefix + "1-" + inFilename + extension
+	outDraftFilename := draftPrefix + "-" + today + "-" + numberPrefix + "2-" + outFilename + extension
+	invDraftFilename := draftPrefix + "-" + today + "-" + numberPrefix + "3-" + inventoryFilename + extension
+	orderDraftFilename := draftPrefix + "-" + today + "-" + numberPrefix + "4-" + orderFilename + extension
 
 	createDateOrUpdateDate(inDraftFilename, today, addHeader(ToItemStringLines(config)))
 	createDateOrUpdateDate(outDraftFilename, today, addHeader(ToItemStringLines(config)))
@@ -263,7 +260,7 @@ func RouteFile(files []os.FileInfo) {
 		if strings.HasPrefix(file.Name(), configPrefix) ||
 			strings.HasPrefix(file.Name(), generatedPrefix) ||
 			strings.HasPrefix(file.Name(), loggingPrefix) ||
-			strings.HasSuffix(file.Name(), draftSuffix) {
+			strings.HasPrefix(file.Name(), draftPrefix) {
 			continue
 		}
 

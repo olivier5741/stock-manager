@@ -1,6 +1,7 @@
 package item
 
 import (
+	"sort"
 	"strconv"
 )
 
@@ -96,5 +97,12 @@ func (its Items) ToStringLines() (out [][]string) {
 		out[line] = []string{i.Prod.String(), i.Val.String()}
 		line++
 	}
+	sort.Sort(ByFirst(out))
 	return
 }
+
+type ByFirst [][]string
+
+func (t ByFirst) Len() int           { return len(t) }
+func (t ByFirst) Less(i, j int) bool { return t[i][0] < t[j][0] }
+func (t ByFirst) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }

@@ -1,3 +1,3 @@
-Name,Bulk,Min
-aspirine,40,9
-isobétadine,50,10
+Nom,Unité Stock,Unité Commande,Coeff,Min.
+aspirine(plaq.),plaq.,boîte,40,9
+isobétadine(tube),tube,boîte,1,1

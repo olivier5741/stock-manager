@@ -31,6 +31,11 @@ func ParseFilename(s string) (f Filename, err error) {
 		return
 	}
 
+	if len(args) == 6 {
+		f.Status = args[0]
+		args = args[1:]
+	}
+
 	//Date
 	date, err := time.Parse(timeFormat, args[0]+"-"+args[1]+"-"+args[2])
 	if err != nil {
@@ -48,16 +53,16 @@ func ParseFilename(s string) (f Filename, err error) {
 	//Action
 	f.Act = args[4]
 
-	if len(args) == 6 {
-		f.Status = args[5]
-	}
-
 	return
 }
 
 type ConfigProd struct {
-	Id, Name  string
-	Bulk, Min int
+	Id        string `csv:"Id"`
+	Name      string `csv:"Nom"`
+	StockUnit string `csv:"Unité Stock"`
+	BulkUnit  string `csv:"Unité Commande"`
+	Bulk      int    `csv:"Coeff"`
+	Min       int    `csv:"Min."`
 }
 
 func GetMissingItems(c []ConfigProd) (out Items) {

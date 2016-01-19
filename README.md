@@ -5,20 +5,21 @@ Une simple gestion de stock via des fichiers .csv
 ## Directory Tree
 ```
 stock-manager-0.1/
-  input/
-    2015-01-09-bievre-1-in.csv    // Bon d'entrée pour le stock de bièvre
-    2015-01-09-libin-1-in.csv     // Bon d'entrée pour le stock de libin
-    2015-01-09-libin-2-out.csv    // Bon de sortie pour le stock de libin (2ème action de la journée)
-    2015-01-11-bievre-1-out.csv   // Bon de sortie pour le stock de bièvre
-    2015-01-11-bievre-2-inv.csv   // Inventaire du stock de bièvre (2ème action de la journée)
-    2015-01-12-libin-1-inv.csv    // Inventaire du stock de libin
-  output/
-    stock.csv             // L'état actuel du stock
-    missing.csv           // Ce qu'il manque dans le stock (sur base de la valeur minimum des produits, à configurer dans *config.yaml*
-                          // Exprimé en unité et non en boîte
-  config.yaml             // Fichier de configuration du système (les produits, leur nom *name*, valeur minimum *min*, le nombre par boîte *bulk*
-  log                     // Fichier de log, pour consulter les éventuelles erreurs
-  stock-manager-0.1.exe   // Lancer pour regénérer les output à partir des input
+  stock-manager-0.1.exe   // Lancer pour regénérer (stock, à commander, brouillons)
+  bievre/                                     // Nom du stock [harcodé ...]
+    l-erreurs                                 // Les éventuelles erreurs
+    g-stock.csv                               // L'état actuel du stock
+    g-à commander.csv                         
+        // Ce qu'il manque dans le stock (sur base de la valeur minimum des produits, à configurer dans *c-config.csv*
+    c-config.csv                              
+        // Configuration du système (les produits, leur nom,unité de stock, unité de Commande, coefficient [combien d'unité de stock y a-t-il dans une unité de commande], stock minimum
+    brouillon-2016-01-19-n°4-commande.csv     // Commande générée
+    brouillon-2016-01-19-n°3-inventaire.csv   // Inventaire généré
+    brouillon-2016-01-19-n°2-sortie.csv       // Bon de sortie généré
+    brouillon-2016-01-19-n°1-entrée.csv       // Bon d'entrée généré
+    2016-01-19-n°3-inventaire.csv             // Inventaire
+    2016-01-19-n°2-sortie.csv                 // Bon de sortie
+    2016-01-19-n°1-entrée                     // Bon d'entrée
 ```
 
 ## Golang run

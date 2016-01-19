@@ -1,7 +1,6 @@
 package stock
 
 import (
-	log "github.com/Sirupsen/logrus"
 	. "github.com/olivier5741/stock-manager/item"
 	. "github.com/olivier5741/stock-manager/skelet"
 )
@@ -17,8 +16,6 @@ func MakeStock(name string) Ider {
 
 func FromActions(acts []interface{}, id string) Ider {
 	stock := MakeStock(id).(*Stock)
-	log.Debug("EVENTS TO REPLAY")
-	log.Debug(acts)
 	for _, act := range acts {
 		switch act := act.(type) {
 		case In:
@@ -57,12 +54,7 @@ func (s *Stock) SubmitIn(i InCmd) (e In, err error) {
 }
 
 func (s *Stock) SubmitOut(o OutCmd) (e Out, err error) {
-	log.Debug("ITEMS")
-	log.Debug(s.Items)
-	log.Debug(o.Items)
 	s.Items.Sub(o.Items)
-	log.Debug("ITEMS after sub")
-	log.Debug(s.Items)
 	e = Out{o.Items}
 	return
 }
