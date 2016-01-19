@@ -8,7 +8,6 @@ import (
 	"github.com/olivier5741/stock-manager/cmd/stock"
 	. "github.com/olivier5741/stock-manager/item"
 	"github.com/olivier5741/stock-manager/skelet"
-	. "github.com/olivier5741/stock-manager/stock"
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
@@ -21,7 +20,7 @@ import (
 // Windows build :
 // GOOS=windows GOARCH=386 go build -o stock-manager-0.1.exe main.go config.go
 var (
-	dir = "Bièvre"
+	dir = "bievre"
 
 	extension       = ".csv"
 	configPrefix    = "c-"
@@ -89,13 +88,7 @@ func GetConfigFromFile(filename string, config interface{}) error {
 	return yaml.Unmarshal(out, config)
 }
 
-func main() {
-
-	// setup environment if not exist
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		os.Mkdir(dir, 0755)
-	}
-
+func setLog() {
 	f, err1 := os.OpenFile(dir+"/"+logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err1 != nil {
 		log.WithFields(log.Fields{
@@ -105,10 +98,12 @@ func main() {
 	}
 	defer f.Close()
 
-	log.SetOutput(f)
+	log.SetOutput(os.Stdout)
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(log.DebugLevel)
+}
 
+func getConfig() []ConfigProd {
 	config := make([]ConfigProd, 0)
 	configFile, err2 := os.OpenFile(dir+"/"+configFilename, os.O_CREATE, 0666)
 	defer configFile.Close()
@@ -128,6 +123,58 @@ func main() {
 		}).Error("Cannot get config from csv file")
 	}
 
+	return config
+}
+
+func inStock(config []ConfigProd) (its Items) {
+	stocks, err4 := endPt.StocksQuery()
+	if err4 != nil {
+		log.WithFields(log.Fields{
+			"err": err4,
+		}).Error("Cannot execute stock query")
+	}
+
+	log.Debug("IN STOCK")
+	log.Debug(stocks[0].Items.Copy())
+
+	if len(stocks) > 0 {
+		its = stocks[0].Items.Copy()
+	} else {
+		its = Items{}
+	}
+
+	for _, prod := range config {
+		if _, ok := its[prod.Name]; !ok {
+			its[prod.Name] = Item{Prod(prod.Name), Val{0}}
+		}
+	}
+
+	return
+}
+
+func missing(config []ConfigProd, s Items) (its Items) {
+
+	its = s.Missing(GetMissingItems(config))
+
+	for _, prod := range config {
+		if _, ok := its[prod.Name]; !ok {
+			its[prod.Name] = Item{Prod(prod.Name), Val{0}}
+		}
+	}
+
+	return
+}
+
+func main() {
+
+	setLog()
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0755)
+	}
+
+	config := getConfig()
+
 	files, err3 := ioutil.ReadDir(dir)
 
 	if err3 != nil {
@@ -139,19 +186,10 @@ func main() {
 
 	RouteFile(files)
 
-	// OUTPUT
-	// Left in stock
-	p := stock.MakeProdInStockTable()
-	r, err4 := endPt.StocksQuery()
-	inventory := r[0].Items.Copy()
-	if err4 != nil {
-		log.WithFields(log.Fields{
-			"err": err4,
-		}).Error("Cannot execute stock query")
-	}
+	iStock := inStock(config)
+	inventory := iStock.Copy()
 
-	p.Parse(r)
-	err5 := WriteCsvFile(p.ToProductStringLines(), dashboardfile)
+	err5 := WriteCsvFile(stock.ToProductStringLines(iStock), dashboardfile)
 	if err5 != nil {
 		log.WithFields(log.Fields{
 			"filename": dashboardfile,
@@ -160,15 +198,10 @@ func main() {
 	}
 
 	//Missing
-	mt := stock.MakeProdInStockTable()
-	m := make([]*Stock, 0)
-	for _, s := range r {
-		s.Items = s.Items.Missing(GetMissingItems(config))
-		m = append(m, s)
-	}
-	order := m[0].Items.Copy()
-	mt.Parse(m)
-	err6 := WriteCsvFile(mt.ToProductStringLines(), orderfile)
+	missing := missing(config, iStock)
+	order := missing.Copy()
+
+	err6 := WriteCsvFile(stock.ToProductStringLines(missing), orderfile)
 	if err6 != nil {
 		log.WithFields(log.Fields{
 			"filename": orderfile,
@@ -182,8 +215,6 @@ func main() {
 	outDraftFilename := today + "-" + numberPrefix + "2-" + outFilename + draftSuffix
 	invDraftFilename := today + "-" + numberPrefix + "3-" + inventoryFilename + draftSuffix
 	orderDraftFilename := today + "-" + numberPrefix + "4-" + orderFilename + draftSuffix
-
-	log.Debug(m[0].Items.ToStringLines())
 
 	createDateOrUpdateDate(inDraftFilename, today, addHeader(ToItemStringLines(config)))
 	createDateOrUpdateDate(outDraftFilename, today, addHeader(ToItemStringLines(config)))
@@ -201,25 +232,23 @@ func addHeader(ins [][]string) [][]string {
 
 func createDateOrUpdateDate(filename string, today string, lines [][]string) {
 	filename = dir + "/" + filename
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		f, err1 := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err1 != nil {
-			log.WithFields(log.Fields{
-				"filename": filename,
-				"err":      err1,
-			}).Error(cannotOpenFile)
-		}
+	f, err1 := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0666)
+	if err1 != nil {
+		log.WithFields(log.Fields{
+			"filename": filename,
+			"err":      err1,
+		}).Error(cannotOpenFile)
+	}
 
-		defer f.Close()
+	defer f.Close()
 
-		w := csv.NewWriter(f)
-		w.WriteAll(lines)
-		if w.Error() != nil {
-			log.WithFields(log.Fields{
-				"filename": filename,
-				"err":      w.Error(),
-			}).Error("Cannot write csv to file")
-		}
+	w := csv.NewWriter(f)
+	w.WriteAll(lines)
+	if w.Error() != nil {
+		log.WithFields(log.Fields{
+			"filename": filename,
+			"err":      w.Error(),
+		}).Error("Cannot write csv to file")
 	}
 }
 
@@ -230,12 +259,16 @@ type FileInputRouter struct {
 func RouteFile(files []os.FileInfo) {
 	for _, file := range files {
 		// TO REFACTOR
+
 		if strings.HasPrefix(file.Name(), configPrefix) ||
 			strings.HasPrefix(file.Name(), generatedPrefix) ||
 			strings.HasPrefix(file.Name(), loggingPrefix) ||
 			strings.HasSuffix(file.Name(), draftSuffix) {
-			return
+			continue
 		}
+
+		log.Debug(file.Name())
+
 		path, err1 := ParseFilename(file.Name())
 		if err1 != nil {
 			log.WithFields(log.Fields{

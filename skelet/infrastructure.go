@@ -46,17 +46,20 @@ func Error(cmd Cmd) Cmd {
 
 func Get(cmd Cmd) Cmd {
 	cmd.Agg, cmd.Err = cmd.Persist.Get(cmd.T.Id())
+	//log.Debug(cmd.Agg)
 	return cmd
 }
 
 func Act(cmd Cmd) Cmd {
 	p := cmd.Agg
 	cmd.Event, cmd.ExtEvent, cmd.Err = cmd.Act(p, cmd.T)
+	log.Debug(cmd.Event)
 	return cmd
 }
 
 func Put(cmd Cmd) Cmd {
 	cmd.Err = cmd.Persist.Put(cmd.Agg.Id(), cmd.Event)
+	//log.Debug(cmd.Agg)
 	return cmd
 }
 

@@ -1,6 +1,7 @@
 package stock
 
 import (
+	. "github.com/olivier5741/stock-manager/item"
 	. "github.com/olivier5741/stock-manager/stock"
 	"sort"
 )
@@ -31,41 +32,12 @@ type ProdInStockTable struct {
 	Table  map[string]ProdInStockLine
 }
 
-// I could put some computing inside methods ...
-func (p *ProdInStockTable) Parse(stocks []*Stock) {
-	it := 0
-	for _, stock := range stocks {
-		p.Stocks = append(p.Stocks, stock.Name)
-		items := stock.Items.Copy()
-		if it != 0 {
-			for key, line := range p.Table {
-				id := string(line.Prod)
-				if item, ok := items[id]; ok {
-					line.Vals = append(line.Vals, item.Val.String())
-					delete(items, id)
-				} else {
-					line.Vals = append(line.Vals, "")
-				}
-				//log.Println(line)
-				p.Table[key] = line
-			}
-		}
-		for _, item := range items {
-			vals := make([]string, it)
-			vals = append(vals, item.Val.String())
-			newLine := ProdInStockLine{string(item.Prod), vals}
-			p.Table[string(item.Prod)] = newLine
-		}
-		it++
-	}
-}
+func ToProductStringLines(items Items) (lines [][]string) {
 
-func (p ProdInStockTable) ToProductStringLines() (lines [][]string) {
-
-	lines = [][]string{append([]string{"product"}, p.Stocks...)}
+	lines = [][]string{[]string{"Prod", "Val"}}
 
 	keys := sort.StringSlice{}
-	for key, _ := range p.Table {
+	for key, _ := range items {
 		keys = append(keys, key)
 	}
 
@@ -73,9 +45,8 @@ func (p ProdInStockTable) ToProductStringLines() (lines [][]string) {
 	keys.Sort()
 
 	for _, key := range keys {
-		item := p.Table[key]
-		line := []string{item.Prod}
-		line = append(line, item.Vals...)
+		item := items[key]
+		line := []string{item.Prod.String(), item.Val.String()}
 		lines = append(lines, line)
 	}
 

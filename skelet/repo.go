@@ -1,5 +1,9 @@
 package skelet
 
+import (
+	log "github.com/Sirupsen/logrus"
+)
+
 type EvtPlay func(acts []interface{}, id string) Ider
 type Init func(id string) Ider
 
@@ -17,6 +21,8 @@ func MakeDumEvtRepo(i Init, e EvtPlay) *DumEvtRepo {
 func (r DumEvtRepo) GetAll() (aggs []Ider, err error) {
 	for key, _ := range r.db {
 		out, err := r.Get(key)
+		log.Debug("AGG AFTER GET")
+		log.Debug(out)
 		if err != nil {
 			return nil, err
 		}
@@ -34,6 +40,8 @@ func (r DumEvtRepo) Get(id string) (Ider, error) {
 }
 
 func (r *DumEvtRepo) Put(id string, event interface{}) (err error) {
+	log.Debug("EVENTS TO PUT")
+	log.Debug(event)
 	r.db[id] = append(r.db[id], event)
 	return
 }

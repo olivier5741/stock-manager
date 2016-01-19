@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	. "github.com/olivier5741/stock-manager/item"
 	"path/filepath"
 	"strings"
@@ -65,8 +64,6 @@ func GetMissingItems(c []ConfigProd) (out Items) {
 	out = map[string]Item{}
 	for _, p := range c {
 		out[p.Name] = Item{Prod(p.Name), Val{p.Min * p.Bulk}}
-
-		log.Debug(p)
 	}
 	return
 }
