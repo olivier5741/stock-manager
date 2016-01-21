@@ -6,12 +6,23 @@ import (
 
 var (
 	rowSizeErr = fmt.Errorf("The size of the row doesn't match the size of content row")
+	colSizeErr = fmt.Errorf("The size of the col doesn't match the size of content col")
 )
 
 type T struct {
-	RowHeader []string
-	ColHeader []string
-	Content   [][]string
+	rowHeader []string
+	colHeader []string
+	content   [][]string
+}
+
+func (t T) String() (s string) {
+	for _, l := range t.GetContentWithHeaders() {
+		for _, v := range l {
+			s += v + ","
+		}
+		s += "\n"
+	}
+	return
 }
 
 func NewT() *T {
@@ -19,80 +30,64 @@ func NewT() *T {
 	return &t
 }
 
-func (t *T) AddRowHeader(r []string) error {
-	if len(t.Content) != 0 && len(t.Content[0]) != len(r) {
-		return rowSizeErr
-	}
-	copy(t.RowHeader, r)
-	return nil
-}
+func (t *T) Transpose() {
 
-func (t *T) AddColHeader(c []string) error {
-	if len(t.Content) != 0 && len(t.Content) != len(c) {
-		return rowSizeErr
-	}
-	copy(t.ColHeader, c)
-	return nil
-}
+	t.rowHeader, t.colHeader = t.colHeader, t.rowHeader
 
-func (t *T) addRow(v []string) error {
-	if len(t.Content) != 0 && len(t.Content[0]) != len(v) {
-		return rowSizeErr
+	if len(t.content) == 0 {
+		return
 	}
-	if len(t.Content) == 0 {
-		t.ColHeader = make([]string, len(v))
-	}
-	t.Content = append(t.Content, v)
-	return nil
-}
 
-func (t *T) AddRowWithoutHeader(v []string) error {
-	return t.AddRowWithHeader("", v)
-}
+	rows := len(t.content[0])
+	cols := len(t.content)
 
-func (t *T) AddRowWithHeader(h string, v []string) error {
-	err := t.addRow(v)
-	if err != nil {
-		return err
-	}
-	t.RowHeader = append(t.RowHeader, h)
-	return nil
-}
+	trans := make([][]string, rows)
 
-func (t *T) addCol(v []string) error {
-	if len(t.Content) != 0 && len(t.Content) != len(v) {
-		return fmt.Errorf("The size of the column doesn't match the size of content column")
-	}
-	if len(t.Content) == 0 {
-		t.RowHeader = make([]string, len(v))
-		for i := 0; i < len(v); i++ {
-			t.Content = append(t.Content, make([]string, 0))
+	for i := 0; i < rows; i++ {
+		trans[i] = make([]string, cols)
+		for j := 0; j < cols; j++ {
+			trans[i][j] = t.content[j][i]
 		}
 	}
 
-	for k, i := range t.Content {
-		t.Content[k] = append(i, v[k])
-	}
+	t.content = trans
+}
 
+func (t *T) AddColHeader(c []string) error {
+	if len(t.content) != 0 && len(t.content) != len(c) {
+
+		fmt.Println(len(t.content))
+		return rowSizeErr
+	}
+	h := make([]string, len(c))
+	copy(h, c)
+	t.colHeader = h
 	return nil
 }
 
-func (t *T) AddColWithoutHeader(v []string) error {
-	return t.AddColWithHeader("", v)
-}
-
-func (t *T) AddColWithHeader(h string, v []string) error {
-	err := t.addCol(v)
-	if err != nil {
-		return err
+func (t *T) AddWithHeader(vs ...[]string) error {
+	h := make([]string, 0)
+	c := make([][]string, len(vs))
+	for i, v := range vs {
+		if len(t.content) != 0 && len(t.content[0]) != len(v)-1 {
+			return rowSizeErr
+		}
+		h = append(h, v[0])
+		c[i] = v[1:]
 	}
-	t.ColHeader = append(t.ColHeader, h)
+
+	t.content = append(t.content, c...)
+	t.rowHeader = append(t.rowHeader, h...)
+	if len(t.content) != 0 && len(t.colHeader) < len(t.content[0]) {
+		t.colHeader = append(t.colHeader,
+			make([]string, len(t.content[0])-len(t.colHeader))...)
+	}
 	return nil
 }
 
 func (t T) GetContent() [][]string {
 	out := make([][]string, 0)
-	for _, r := range t.Content {
+	for _, r := range t.content {
 		newRow := make([]string, len(r))
 		copy(newRow, r)
 		out = append(out, newRow)
@@ -102,17 +97,33 @@ func (t T) GetContent() [][]string {
 
 func (t T) GetContentWithColHeader() [][]string {
 	out := make([][]string, 0)
-	out = append(out, t.ColHeader)
+	out = append(out, t.colHeader)
 	for _, c := range t.GetContent() {
 		out = append(out, c)
 	}
 	return out
 }
 
-func (t T) GetContentWithRowHeader() [][]string {
+func prepend(base [][]string, add []string) [][]string {
 	out := make([][]string, 0)
-	for i, c := range t.GetContent() {
-		out = append(out, append([]string{t.RowHeader[i]}, c...))
+	for i, l := range base {
+		out = append(out, append([]string{add[i]}, l...))
 	}
+	return out
+}
+
+func (t T) GetContentWithRowHeader() [][]string {
+	return prepend(t.content, t.rowHeader)
+}
+
+func (t T) GetContentWithHeaders() [][]string {
+	out := make([][]string, 0)
+	out = append(out, append([]string{""}, t.colHeader...))
+	inter := prepend(t.content, t.rowHeader)
+
+	for _, it := range inter {
+		out = append(out, it)
+	}
+
 	return out
 }

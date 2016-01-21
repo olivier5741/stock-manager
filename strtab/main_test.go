@@ -6,16 +6,18 @@ import (
 
 func Test(t *testing.T) {
 	tab := NewT()
-	tab.AddRowWithHeader("iso", []string{"22", "12"})
-	tab.AddRowWithHeader("aspi", []string{"2", "3"})
-	tab.AddRowWithHeader("busco", []string{"1", "11"})
-	t.Log(tab.GetContentWithColHeader())
-	t.Log(tab.GetContentWithRowHeader())
 
-	tab1 := NewT()
-	tab1.AddColWithHeader("iso", []string{"22", "12"})
-	tab1.AddColWithHeader("aspi", []string{"2", "3"})
-	tab1.AddColWithHeader("busco", []string{"1", "11"})
-	t.Log(tab1.GetContentWithColHeader())
-	t.Log(tab1.GetContentWithRowHeader())
+	tab.AddColHeader([]string{"min", "max"})
+	tab.AddWithHeader([]string{"iso", "2", "3"},
+		[]string{"aspi", "22", "12"},
+		[]string{"busco", "1", "11"})
+	t.Log(tab.GetContentWithRowHeader())
+	t.Log(tab.GetContentWithColHeader())
+	t.Log(tab.GetContentWithHeaders())
+
+	tab.Transpose()
+	t.Log(tab.GetContentWithRowHeader())
+	t.Log(tab.GetContentWithColHeader())
+	t.Log(tab.GetContentWithHeaders())
+	t.Log(tab.String())
 }
