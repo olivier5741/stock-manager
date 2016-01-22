@@ -59,7 +59,6 @@ func Get(cmd Cmd) Cmd {
 func Act(cmd Cmd) Cmd {
 	p := cmd.Agg
 	cmd.Event, cmd.ExtEvent, cmd.Err = cmd.Act(p, cmd.T)
-	log.Debug(cmd.Event)
 	return cmd
 }
 

@@ -8,10 +8,13 @@ import (
 	"github.com/olivier5741/stock-manager/cmd/stock"
 	. "github.com/olivier5741/stock-manager/item"
 	"github.com/olivier5741/stock-manager/skelet"
+	stockBL "github.com/olivier5741/stock-manager/stock"
+	"github.com/olivier5741/stock-manager/strtab"
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -29,11 +32,8 @@ var (
 	draftPrefix     = "brouillon"
 	numberPrefix    = "n°"
 
-	configFilename     = configPrefix + "config.csv"
-	logfile            = loggingPrefix + "erreurs"
-	dashboardfile      = generatedPrefix + "stock" + extension
-	orderfile          = generatedPrefix + "à commander" + extension
-	itemsEvolutionFile = generatedPrefix + "produits" + extension
+	configFilename = configPrefix + "config.csv"
+	logfile        = loggingPrefix + "erreurs"
 
 	inventoryFilename = "inventaire"
 	inFilename        = "entrée"
@@ -67,14 +67,6 @@ func itemArrayToMap(items []Item) (out Items) {
 	return
 }
 
-func logIfCannotOpenFile(err error, f string) {
-	if err != nil {
-		log.WithFields(log.Fields{
-			"filename": logfile,
-		}).Error(cannotOpenFile)
-	}
-}
-
 func GetConfigFromFile(filename string, config interface{}) error {
 	f, err1 := os.OpenFile(filename, os.O_CREATE, 0666)
 	if err1 != nil {
@@ -87,21 +79,6 @@ func GetConfigFromFile(filename string, config interface{}) error {
 		return err2
 	}
 	return yaml.Unmarshal(out, config)
-}
-
-func setLog() {
-	f, err1 := os.OpenFile(dir+"/"+logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err1 != nil {
-		log.WithFields(log.Fields{
-			"filename": logfile,
-			"err":      err1,
-		}).Error(cannotOpenFile)
-	}
-	defer f.Close()
-
-	log.SetOutput(os.Stdout)
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.DebugLevel)
 }
 
 func getConfig() []ConfigProd {
@@ -128,18 +105,14 @@ func getConfig() []ConfigProd {
 }
 
 func inStock(config []ConfigProd) (its Items) {
-	stocks, err4 := endPt.StocksQuery()
+	stock1, err4 := endPt.Db.Get("bievre")
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
 		}).Error("Cannot execute stock query")
 	}
 
-	if len(stocks) > 0 {
-		its = stocks[0].Items.Copy()
-	} else {
-		its = Items{}
-	}
+	its = stock1.(*stockBL.Stock).Items.Copy()
 
 	for _, prod := range config {
 		if _, ok := its[prod.Name]; !ok {
@@ -154,9 +127,86 @@ func missing(config []ConfigProd, s Items) Items {
 	return s.Missing(GetMissingItems(config))
 }
 
+func mapItem(its Items) [][]string {
+	out := make([][]string, 0)
+	for _, it := range its {
+		out = append(out, []string{it.Prod.String(), it.Val.String()})
+	}
+	return out
+}
+
+func mapConfigProd(cs []ConfigProd) [][]string {
+	out := make([][]string, 0)
+	for _, c := range cs {
+		out = append(out, []string{c.Name, ""})
+	}
+	return out
+}
+
+func mapItemsMap(its map[string]Items) map[string]map[string]string {
+	out := make(map[string]map[string]string, 0)
+	for date, it := range its {
+		newRow := make(map[string]string)
+		for prod, val := range it {
+			newRow[prod] = val.Val.String()
+		}
+		out[date] = newRow
+	}
+	return out
+}
+
+type Viewer interface {
+	Show()
+}
+
+type TableView struct {
+	Path   string
+	Title  string
+	Table  *strtab.T
+	Render func(*strtab.T) [][]string
+}
+
+func (t TableView) Show() {
+	f, err := os.Create(t.Path + "/" + t.Title)
+
+	if err != nil {
+		log.WithFields(log.Fields{
+			"path":     t.Path,
+			"filename": t.Title,
+			"err":      err,
+		}).Error("Error creating the csv file")
+		return
+	}
+
+	defer f.Close()
+
+	w := csv.NewWriter(f)
+	w.WriteAll(t.Render(t.Table))
+
+	if w.Error() != nil {
+		log.WithFields(log.Fields{
+			"path":     t.Path,
+			"filename": t.Title,
+			"view":     t.Table,
+			"err":      w.Error(),
+		}).Error("Error writing the view to a csv file")
+	}
+}
+
 func main() {
 
-	setLog()
+	f, err1 := os.OpenFile(dir+"/"+logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err1 != nil {
+		log.WithFields(log.Fields{
+			"filename": logfile,
+			"err":      err1,
+		}).Error(cannotOpenFile)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetLevel(log.ErrorLevel)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		os.Mkdir(dir, 0755)
@@ -175,81 +225,40 @@ func main() {
 
 	RouteFile(files)
 
-	iStock := inStock(config)
-	inventory := iStock.Copy()
+	iStock := inStock(config).Copy()
 
-	err5 := WriteCsvFile(stock.ToProductStringLines(iStock), dashboardfile)
-	if err5 != nil {
-		log.WithFields(log.Fields{
-			"filename": dashboardfile,
-			"err":      err5,
-		}).Error("Cannot write csv file")
-	}
+	prodValHeader := []string{"Prod", "Val"}
+	prodValRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(false) }
+	prodEvolRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(true) }
+
+	TableView{"bievre", "g-stock.csv",
+		strtab.NewTable(prodValHeader, mapItem(iStock)...), prodValRender}.Show()
+
+	TableView{"bievre", draftFileName(3, inventoryFilename),
+		strtab.NewTable(prodValHeader, mapItem(iStock)...), prodValRender}.Show()
 
 	//Missing
 	missing := missing(config, iStock)
-	order := missing.Copy()
 
-	err6 := WriteCsvFile(stock.ToProductStringLines(missing), orderfile)
-	if err6 != nil {
-		log.WithFields(log.Fields{
-			"filename": orderfile,
-			"err":      err6,
-		}).Error("Cannot write csv file")
-	}
+	TableView{"bievre", "g-à commander.csv",
+		strtab.NewTable(prodValHeader, mapItem(missing)...), prodValRender}.Show()
 
-	// Create missing files
+	TableView{"bievre", draftFileName(4, orderFilename),
+		strtab.NewTable(prodValHeader, mapItem(missing)...), prodValRender}.Show()
+
+	TableView{"bievre", draftFileName(1, inFilename),
+		strtab.NewTable(prodValHeader, mapConfigProd(config)...), prodValRender}.Show()
+
+	TableView{"bievre", draftFileName(2, outFilename),
+		strtab.NewTable(prodValHeader, mapConfigProd(config)...), prodValRender}.Show()
+
+	TableView{"bievre", "g-produits.csv",
+		strtab.NewTableFromMap(mapItemsMap(endPt.ProdValEvolution("bievre"))).Transpose(), prodEvolRender}.Show()
+}
+
+func draftFileName(num int, name string) string {
 	today := time.Now().Format("2006-01-02")
-	inDraftFilename := draftPrefix + "-" + today + "-" + numberPrefix + "1-" + inFilename + extension
-	outDraftFilename := draftPrefix + "-" + today + "-" + numberPrefix + "2-" + outFilename + extension
-	invDraftFilename := draftPrefix + "-" + today + "-" + numberPrefix + "3-" + inventoryFilename + extension
-	orderDraftFilename := draftPrefix + "-" + today + "-" + numberPrefix + "4-" + orderFilename + extension
-
-	createDateOrUpdateDate(inDraftFilename, today, addHeader(ToItemStringLines(config)))
-	createDateOrUpdateDate(outDraftFilename, today, addHeader(ToItemStringLines(config)))
-	createDateOrUpdateDate(invDraftFilename, today, addHeader(inventory.ToStringLines()))
-	createDateOrUpdateDate(orderDraftFilename, today, addHeader(order.ToStringLines()))
-
-	a := endPt.ProdValEvolution("bievre")
-	log.Debug(a)
-	data := ItemsEvolutionView(a)
-	err7 := WriteCsvFile(data, itemsEvolutionFile)
-	if err7 != nil {
-		log.WithFields(log.Fields{
-			"filename": itemsEvolutionFile,
-			"err":      err7,
-		}).Error("Cannot write csv file")
-	}
-}
-
-func addHeader(ins [][]string) [][]string {
-	out := [][]string{[]string{"Prod", "Val"}}
-	for _, in := range ins {
-		out = append(out, in)
-	}
-	return out
-}
-
-func createDateOrUpdateDate(filename string, today string, lines [][]string) {
-	filename = dir + "/" + filename
-	f, err1 := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0666)
-	if err1 != nil {
-		log.WithFields(log.Fields{
-			"filename": filename,
-			"err":      err1,
-		}).Error(cannotOpenFile)
-	}
-
-	defer f.Close()
-
-	w := csv.NewWriter(f)
-	w.WriteAll(lines)
-	if w.Error() != nil {
-		log.WithFields(log.Fields{
-			"filename": filename,
-			"err":      w.Error(),
-		}).Error("Cannot write csv to file")
-	}
+	return draftPrefix + "-" + today + "-" + numberPrefix + strconv.Itoa(num) + "-" + name + extension
 }
 
 type FileInputRouter struct {
@@ -289,19 +298,6 @@ func RouteFile(files []os.FileInfo) {
 
 		skelet.ExecuteCommand(skelet.Cmd{T: out, Route: stockRoute}, stock.Chain)
 	}
-}
-
-func WriteCsvFile(lines [][]string, path string) error {
-	f, err := os.Create(dir + "/" + path)
-	defer f.Close()
-	if err != nil {
-		return err
-	}
-	w := csv.NewWriter(f)
-	//w.Comma = ';'
-	log.Debug(lines)
-	w.WriteAll(lines)
-	return w.Error()
 }
 
 func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {

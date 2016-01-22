@@ -38,7 +38,14 @@ func (r DumEvtRepo) Get(id string) (Ider, error) {
 	if !ok {
 		return r.InitAgg(id), nil
 	}
-	return r.PlayEvt(events, id), nil
+
+	acts := make([]interface{}, 0)
+	for _, e := range events {
+		// TODO : something more intelligent than this :)
+		acts = append(acts, e.(Event).Act)
+	}
+
+	return r.PlayEvt(acts, id), nil
 }
 
 func (r *DumEvtRepo) Put(id string, event interface{}) (err error) {

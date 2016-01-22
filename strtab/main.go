@@ -1,7 +1,10 @@
 package strtab
 
+// TODO : refactoring of unecessary stuff
+
 import (
 	"fmt"
+	"sort"
 )
 
 var (
@@ -15,8 +18,15 @@ type T struct {
 	content   [][]string
 }
 
+func (t T) Len() int { return len(t.content) }
+func (t *T) Swap(i, j int) {
+	t.content[i], t.content[j] = t.content[j], t.content[i]
+	t.rowHeader[i], t.rowHeader[j] = t.rowHeader[j], t.rowHeader[i]
+}
+func (t T) Less(i, j int) bool { return t.rowHeader[i] < t.rowHeader[j] }
+
 func (t T) String() (s string) {
-	for _, l := range t.GetContentWithHeaders() {
+	for _, l := range t.GetContentWithHeaders(true) {
 		for _, v := range l {
 			s += v + ","
 		}
@@ -30,12 +40,21 @@ func NewT() *T {
 	return &t
 }
 
-func (t *T) Transpose() {
+func NewTable(h []string, r ...[]string) *T {
+	t := NewT()
+	t.AddColHeader(h)
+	t.AddWithHeader(r...)
+	sort.Sort(t)
+
+	return t
+}
+
+func (t *T) Transpose() *T {
 
 	t.rowHeader, t.colHeader = t.colHeader, t.rowHeader
 
 	if len(t.content) == 0 {
-		return
+		return t
 	}
 
 	rows := len(t.content[0])
@@ -51,6 +70,8 @@ func (t *T) Transpose() {
 	}
 
 	t.content = trans
+	sort.Sort(t)
+	return t
 }
 
 func (t *T) AddColHeader(c []string) error {
@@ -63,6 +84,36 @@ func (t *T) AddColHeader(c []string) error {
 	copy(h, c)
 	t.colHeader = h
 	return nil
+}
+
+func NewTableFromMap(vs map[string]map[string]string) *T {
+	h := make(map[string]int, 0)
+	c := make([][]string, 0)
+	n := 0
+	for i, r := range vs {
+		newRow := make([]string, n+1)
+		newRow[0] = i
+		for j, v := range r {
+			if e, ok := h[j]; ok {
+				newRow[e+1] = v
+			} else {
+				for kOld, cOld := range c {
+					c[kOld] = append(cOld, "")
+				}
+				newRow = append(newRow, v)
+				h[j] = n
+				n++
+			}
+		}
+		c = append(c, newRow)
+	}
+
+	hSlice := make([]string, len(h))
+	for k, v := range h {
+		hSlice[v] = k
+	}
+	t := NewTable(hSlice, c...)
+	return t
 }
 
 func (t *T) AddWithHeader(vs ...[]string) error {
@@ -116,9 +167,14 @@ func (t T) GetContentWithRowHeader() [][]string {
 	return prepend(t.content, t.rowHeader)
 }
 
-func (t T) GetContentWithHeaders() [][]string {
+func (t T) GetContentWithHeaders(ok bool) [][]string {
 	out := make([][]string, 0)
-	out = append(out, append([]string{""}, t.colHeader...))
+	colHead := make([]string, 0)
+	if ok {
+		colHead = append(colHead, "")
+	}
+	colHead = append(colHead, t.colHeader...)
+	out = append(out, colHead)
 	inter := prepend(t.content, t.rowHeader)
 
 	for _, it := range inter {

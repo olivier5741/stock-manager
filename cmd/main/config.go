@@ -4,12 +4,8 @@ import (
 	"fmt"
 	. "github.com/olivier5741/stock-manager/item"
 	"path/filepath"
-	"sort"
-	"strconv"
 	"strings"
 	"time"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 var (
@@ -74,59 +70,6 @@ func GetMissingItems(c []ConfigProd) (out Items) {
 	for _, p := range c {
 		out[p.Name] = Item{Prod(p.Name), Val{p.Min * p.Bulk}}
 	}
-	return
-}
-
-func ToItemStringLines(prods []ConfigProd) (out [][]string) {
-	out = make([][]string, len(prods))
-	for i, prod := range prods {
-		out[i] = []string{prod.Name, ""}
-	}
-	return
-}
-
-func ItemsEvolutionView(in map[string]Items) (out [][]string) {
-	keys := make(sort.StringSlice, 0)
-
-	for k, _ := range in {
-		keys = append(keys, k)
-	}
-	keys.Sort()
-
-	outmap := make(map[string][]string, 0)
-
-	b := 0
-	for _, date := range keys {
-		for _, item := range in[date] {
-			outmap[item.Prod.String()] = append(outmap[item.Prod.String()], item.Val.String())
-		}
-
-		// regularize map
-		for k, v := range outmap {
-			if len(v) == 0 {
-				outmap[k] = append(v, strconv.Itoa(0))
-			} else {
-				if len(v) != b+1 {
-					outmap[k] = append(v, v[len(v)-1])
-				}
-			}
-
-		}
-		b++
-	}
-
-	headers := make([]string, len(keys))
-	for _, k := range keys {
-		headers = append(headers, k)
-	}
-
-	out = [][]string{append([]string{"Prod"}, keys...)}
-	for k, v := range outmap {
-		out = append(out, append([]string{k}, v...))
-	}
-
-	log.Debug(out)
-
 	return
 }
 
