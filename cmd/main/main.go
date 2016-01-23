@@ -332,6 +332,7 @@ func RouteFile(files []os.FileInfo) {
 
 func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
+	// should put this in a local type
 	mapper := map[string]func(s string, c interface{}){
 		Tr("csv_header_item_product"): func(s string, c interface{}) { c.(*Item).Prod = Prod(s) },
 		Tr("csv_header_item_value"): func(s string, c interface{}) {
@@ -347,6 +348,7 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		its = append(its, *a)
 	}
 
+	// should put this inside switch case
 	csvToStruct(path.String(), mapper, newLiner, appender)
 	itsMap := itemArrayToMap(its)
 
