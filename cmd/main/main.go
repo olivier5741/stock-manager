@@ -5,15 +5,15 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gocarina/gocsv"
+	"github.com/nicksnyder/go-i18n/i18n"
 	"github.com/olivier5741/stock-manager/cmd/stock"
 	. "github.com/olivier5741/stock-manager/item"
 	"github.com/olivier5741/stock-manager/skelet"
 	stockBL "github.com/olivier5741/stock-manager/stock"
 	"github.com/olivier5741/stock-manager/strtab"
-	"gopkg.in/yaml.v2"
-	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -23,24 +23,20 @@ import (
 // Windows build :
 // GOOS=windows GOARCH=386 go build -o stock-manager-0.1.exe main.go config.go
 var (
+	Tr i18n.TranslateFunc
+
+	sep = "-"
+
+	csvSuff    = ".csv"
+	TimeFormat = "2006" + sep + "01" + sep + "02"
+
 	dir = "bievre"
 
 	extension       = ".csv"
-	configPrefix    = "c-"
-	generatedPrefix = "g-"
-	loggingPrefix   = "l-"
-	draftPrefix     = "brouillon"
+	configPrefix    = "c" + sep
+	generatedPrefix = "g" + sep
+	loggingPrefix   = "l" + sep
 	numberPrefix    = "n°"
-
-	configFilename = configPrefix + "config.csv"
-	logfile        = loggingPrefix + "erreurs"
-
-	inventoryFilename = "inventaire"
-	inFilename        = "entrée"
-	outFilename       = "sortie"
-	orderFilename     = "commande"
-
-	cannotOpenFile = "Cannot open file"
 
 	repo  = stock.MakeDummyStockRepository()
 	endPt = stock.EndPt{Db: repo}
@@ -67,38 +63,55 @@ func itemArrayToMap(items []Item) (out Items) {
 	return
 }
 
-func GetConfigFromFile(filename string, config interface{}) error {
-	f, err1 := os.OpenFile(filename, os.O_CREATE, 0666)
-	if err1 != nil {
-		return err1
-	}
-	defer f.Close()
-
-	out, err2 := ioutil.ReadAll(f)
-	if err2 != nil {
-		return err2
-	}
-	return yaml.Unmarshal(out, config)
-}
-
 func getConfig() []ConfigProd {
 	config := make([]ConfigProd, 0)
+	configFilename := configPrefix + Tr("file_name_config") + extension
 	configFile, err2 := os.OpenFile(dir+"/"+configFilename, os.O_CREATE, 0666)
 	defer configFile.Close()
 	if err2 != nil {
 		log.WithFields(log.Fields{
 			"filename": configFilename,
 			"err":      err2,
-		}).Error(cannotOpenFile)
+		}).Error(Tr("error_file_open"))
 	}
 
-	err2a := gocsv.UnmarshalFile(configFile, &config)
+	r := csv.NewReader(configFile)
+	out, err2a := r.ReadAll()
 
 	if err2a != nil {
 		log.WithFields(log.Fields{
 			"filename": configFilename,
 			"err":      err2a,
-		}).Error("Cannot get config from csv file")
+		}).Error(Tr("error_file_csv_config"))
+	}
+
+	if len(out) < 2 {
+		return config
+	}
+
+	headers := make(map[int]func(string, *ConfigProd), 0)
+
+	for i, h := range out[0] {
+		switch h {
+		case Tr("csv_header_item_product"):
+			headers[i] = func(s string, c *ConfigProd) { c.Prod = s }
+		case Tr("csv_header_stock_unit"):
+			headers[i] = func(s string, c *ConfigProd) { c.StockUnit = s }
+		case Tr("csv_header_order_unit"):
+			headers[i] = func(s string, c *ConfigProd) { c.OrderUnit = s }
+		case Tr("csv_header_factor_stock_unit_order_unit"):
+			headers[i] = func(s string, c *ConfigProd) { c.Fact, _ = strconv.Atoi(s) }
+		case Tr("csv_header_stock_min"):
+			headers[i] = func(s string, c *ConfigProd) { c.Min, _ = strconv.Atoi(s) }
+		}
+	}
+
+	for _, line := range out[1:] {
+		configProd := new(ConfigProd)
+		for k, fun := range headers {
+			fun(line[k], configProd)
+		}
+		config = append(config, *configProd)
 	}
 
 	return config
@@ -109,14 +122,14 @@ func inStock(config []ConfigProd) (its Items) {
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
-		}).Error("Cannot execute stock query")
+		}).Error(Tr("error_query_stock")) // Cannot execute stock query
 	}
 
 	its = stock1.(*stockBL.Stock).Items.Copy()
 
 	for _, prod := range config {
-		if _, ok := its[prod.Name]; !ok {
-			its[prod.Name] = Item{Prod(prod.Name), Val{0}}
+		if _, ok := its[prod.Prod]; !ok {
+			its[prod.Prod] = Item{Prod(prod.Prod), Val{0}}
 		}
 	}
 
@@ -138,7 +151,7 @@ func mapItem(its Items) [][]string {
 func mapConfigProd(cs []ConfigProd) [][]string {
 	out := make([][]string, 0)
 	for _, c := range cs {
-		out = append(out, []string{c.Name, ""})
+		out = append(out, []string{c.Prod, ""})
 	}
 	return out
 }
@@ -174,7 +187,7 @@ func (t TableView) Show() {
 			"path":     t.Path,
 			"filename": t.Title,
 			"err":      err,
-		}).Error("Error creating the csv file")
+		}).Error("create_file_error") //Error creating the csv file
 		return
 	}
 
@@ -189,24 +202,36 @@ func (t TableView) Show() {
 			"filename": t.Title,
 			"view":     t.Table,
 			"err":      w.Error(),
-		}).Error("Error writing the view to a csv file")
+		}).Error(Tr("error_file_csv_view_to")) //Error writing the view to a csv file
 	}
+}
+
+func init() {
+	i18n.MustLoadTranslationFile("en-us.all.yaml")
+	i18n.MustLoadTranslationFile("fr-be.all.yaml")
+	Tr, _ = i18n.Tfunc("fr-be")
 }
 
 func main() {
 
-	f, err1 := os.OpenFile(dir+"/"+logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	// LOGGING
+
+	logfile := loggingPrefix + Tr("file_name_log")
+	f, err1 := os.OpenFile(dir+"/"+logfile,
+		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err1 != nil {
 		log.WithFields(log.Fields{
 			"filename": logfile,
 			"err":      err1,
-		}).Error(cannotOpenFile)
+		}).Error(Tr("error_file_open"))
 	}
 	defer f.Close()
 
 	log.SetOutput(f)
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(log.ErrorLevel)
+
+	// PROGRAM
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		os.Mkdir(dir, 0755)
@@ -220,45 +245,45 @@ func main() {
 		log.WithFields(log.Fields{
 			"dir": dir,
 			"err": err3,
-		}).Error("Cannot read directory")
+		}).Error(Tr("error_dir_read"))
 	}
 
 	RouteFile(files)
 
 	iStock := inStock(config).Copy()
 
-	prodValHeader := []string{"Prod", "Val"}
+	prodValHeader := []string{Tr("csv_header_item_product"), Tr("csv_header_item_value")}
 	prodValRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(false) }
 	prodEvolRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(true) }
 
-	TableView{"bievre", "g-stock.csv",
+	TableView{"bievre", generatedPrefix + Tr("file_name_stock") + extension,
 		strtab.NewTable(prodValHeader, mapItem(iStock)...), prodValRender}.Show()
 
-	TableView{"bievre", draftFileName(3, inventoryFilename),
+	TableView{"bievre", draftFileName(3, Tr("file_name_inventory")),
 		strtab.NewTable(prodValHeader, mapItem(iStock)...), prodValRender}.Show()
 
 	//Missing
 	missing := missing(config, iStock)
 
-	TableView{"bievre", "g-à commander.csv",
+	TableView{"bievre", generatedPrefix + Tr("file_name_to_order") + extension,
 		strtab.NewTable(prodValHeader, mapItem(missing)...), prodValRender}.Show()
 
-	TableView{"bievre", draftFileName(4, orderFilename),
+	TableView{"bievre", draftFileName(4, Tr("file_name_order")),
 		strtab.NewTable(prodValHeader, mapItem(missing)...), prodValRender}.Show()
 
-	TableView{"bievre", draftFileName(1, inFilename),
+	TableView{"bievre", draftFileName(1, Tr("file_name_stock_in")),
 		strtab.NewTable(prodValHeader, mapConfigProd(config)...), prodValRender}.Show()
 
-	TableView{"bievre", draftFileName(2, outFilename),
+	TableView{"bievre", draftFileName(2, Tr("file_name_stock_out")),
 		strtab.NewTable(prodValHeader, mapConfigProd(config)...), prodValRender}.Show()
 
-	TableView{"bievre", "g-produits.csv",
+	TableView{"bievre", generatedPrefix + Tr("file_name_product") + extension,
 		strtab.NewTableFromMap(mapItemsMap(endPt.ProdValEvolution("bievre"))).Transpose(), prodEvolRender}.Show()
 }
 
 func draftFileName(num int, name string) string {
-	today := time.Now().Format("2006-01-02")
-	return draftPrefix + "-" + today + "-" + numberPrefix + strconv.Itoa(num) + "-" + name + extension
+	today := time.Now().Format(TimeFormat)
+	return Tr("file_prefix_draft") + sep + today + sep + numberPrefix + strconv.Itoa(num) + sep + name + extension
 }
 
 type FileInputRouter struct {
@@ -272,7 +297,7 @@ func RouteFile(files []os.FileInfo) {
 		if strings.HasPrefix(file.Name(), configPrefix) ||
 			strings.HasPrefix(file.Name(), generatedPrefix) ||
 			strings.HasPrefix(file.Name(), loggingPrefix) ||
-			strings.HasPrefix(file.Name(), draftPrefix) {
+			strings.HasPrefix(file.Name(), Tr("file_prefix_draft")) {
 			continue
 		}
 
@@ -283,7 +308,7 @@ func RouteFile(files []os.FileInfo) {
 			log.WithFields(log.Fields{
 				"filename": file.Name(),
 				"err":      err1,
-			}).Error("Cannot parse filename")
+			}).Error(Tr("error_filename_parse")) //Cannot parse filename
 			continue
 		}
 
@@ -292,7 +317,7 @@ func RouteFile(files []os.FileInfo) {
 			log.WithFields(log.Fields{
 				"filename": file.Name(),
 				"err":      err3,
-			}).Error("Cannot unmarshal to csv")
+			}).Error(Tr("error_file_csv_unmarshal")) //"Cannot unmarshal to csv"
 			continue
 		}
 
@@ -307,35 +332,103 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		return nil, err
 	}
 
-	gocsv.SetCSVReader(func(out io.Reader) *csv.Reader {
-		r := csv.NewReader(out)
-		//r.Comma = ';'
-		return r
-	})
-
 	switch path.Act {
-	case inFilename:
+	case Tr("file_name_stock_in"):
 		its := []Item{}
 		err := gocsv.UnmarshalFile(f, &its)
 		if err != nil {
 			return nil, err
 		}
-		return skelet.InCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + "-" + numberPrefix + path.Id}, nil
-	case outFilename:
+		return skelet.InCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
+	case Tr("file_name_stock_out"):
 		its := []Item{}
 		err := gocsv.UnmarshalFile(f, &its)
 		if err != nil {
 			return nil, err
 		}
-		return skelet.OutCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + "-" + numberPrefix + path.Id}, nil
-	case inventoryFilename:
+		return skelet.OutCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
+	case Tr("file_name_inventory"):
 		its := []Item{}
 		err := gocsv.UnmarshalFile(f, &its)
 		if err != nil {
 			return nil, err
 		}
-		return skelet.InventoryCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + "-" + numberPrefix + path.Id}, nil
+		return skelet.InventoryCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
 
 	}
-	return nil, fmt.Errorf("No action found")
+	return nil, fmt.Errorf(Tr("no_action_for_filename_error")) // No action found
+}
+
+func ParseFilename(s string) (f Filename, err error) {
+	f = Filename{}
+
+	s = filepath.Base(s)
+	//Extension
+	f.Ext = filepath.Ext(s)
+	if strings.HasSuffix(s, csvSuff) {
+		err = fmt.Errorf(Tr("filename_csv_suffix_error"), s)
+	}
+
+	ts := strings.TrimSuffix(s, f.Ext)
+
+	args := strings.Split(ts, sep)
+	if l := len(args); l != 5 && l != 6 {
+		err = fmt.Errorf(Tr("filename_number_argument_error"), s)
+		return
+	}
+
+	if len(args) == 6 {
+		f.Status = args[0]
+		args = args[1:]
+	}
+
+	//Date
+	date, err := time.Parse(TimeFormat, args[0]+sep+args[1]+sep+args[2])
+	if err != nil {
+		return
+	}
+	f.Date = date
+
+	//Stock
+	//f.Stock = args[3]
+	f.Stock = "bievre" //To refactor
+
+	//Id
+	f.Id = strings.TrimPrefix(args[3], numberPrefix)
+
+	//Action
+	f.Act = args[4]
+
+	return
+}
+
+type ConfigProd struct {
+	Prod      string
+	StockUnit string
+	OrderUnit string
+	Fact      int
+	Min       int
+}
+
+func GetMissingItems(c []ConfigProd) (out Items) {
+	out = map[string]Item{}
+	for _, p := range c {
+		out[p.Prod] = Item{Prod(p.Prod), Val{p.Min * p.Fact}}
+	}
+	return
+}
+
+type Filename struct {
+	Date                        time.Time
+	Stock, Act, Id, Ext, Status string
+}
+
+func (f Filename) String() string {
+	s := f.Date.Format(TimeFormat) + sep + numberPrefix + f.Id + sep + f.Act
+	if f.Status != "" {
+		s = s + sep + f.Status
+	}
+	s = s + f.Ext
+
+	return s
 }
