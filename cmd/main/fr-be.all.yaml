@@ -14,8 +14,6 @@
   translation: Le dossier ne peut être lu
 - id: error_file_create
   translation: Le fichier ne peut être créé
-- id: error_file_csv_config
-  translation: La config ne peut être convertie en csv
 - id: error_file_csv_unmarshal
   translation: Le fichier csv ne peut être converti
 - id: error_file_csv_view_to

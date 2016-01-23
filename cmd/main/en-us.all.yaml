@@ -14,8 +14,6 @@
   translation: Cannot read from directory
 - id: error_file_create
   translation: Cannot create file
-- id: error_file_csv_config
-  translation: Cannot unmarshal config file to csv
 - id: error_file_csv_unmarshal
   translation: Cannot unmarshal file
 - id: error_file_csv_view_to

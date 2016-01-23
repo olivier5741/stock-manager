@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/gocarina/gocsv"
+	// considering using this one instead : i18n4go, tools better but not inside
 	"github.com/nicksnyder/go-i18n/i18n"
 	"github.com/olivier5741/stock-manager/cmd/stock"
 	. "github.com/olivier5741/stock-manager/item"
@@ -63,58 +63,47 @@ func itemArrayToMap(items []Item) (out Items) {
 	return
 }
 
-func getConfig() []ConfigProd {
-	config := make([]ConfigProd, 0)
-	configFilename := configPrefix + Tr("file_name_config") + extension
-	configFile, err2 := os.OpenFile(dir+"/"+configFilename, os.O_CREATE, 0666)
-	defer configFile.Close()
+func csvToStruct(filename string, mapper map[string]func(s string, c interface{}),
+	newLiner func() interface{}, appender func(interface{})) {
+
+	file, err2 := os.OpenFile(dir+"/"+filename, os.O_CREATE, 0666)
+	defer file.Close()
 	if err2 != nil {
 		log.WithFields(log.Fields{
-			"filename": configFilename,
+			"filename": filename,
 			"err":      err2,
 		}).Error(Tr("error_file_open"))
 	}
 
-	r := csv.NewReader(configFile)
+	r := csv.NewReader(file)
 	out, err2a := r.ReadAll()
 
 	if err2a != nil {
 		log.WithFields(log.Fields{
-			"filename": configFilename,
+			"filename": filename,
 			"err":      err2a,
-		}).Error(Tr("error_file_csv_config"))
+		}).Error(Tr("error_file_csv_unmarshal"))
 	}
 
 	if len(out) < 2 {
-		return config
+		return
 	}
 
-	headers := make(map[int]func(string, *ConfigProd), 0)
+	headers := make(map[int]func(string, interface{}), 0)
 
 	for i, h := range out[0] {
-		switch h {
-		case Tr("csv_header_item_product"):
-			headers[i] = func(s string, c *ConfigProd) { c.Prod = s }
-		case Tr("csv_header_stock_unit"):
-			headers[i] = func(s string, c *ConfigProd) { c.StockUnit = s }
-		case Tr("csv_header_order_unit"):
-			headers[i] = func(s string, c *ConfigProd) { c.OrderUnit = s }
-		case Tr("csv_header_factor_stock_unit_order_unit"):
-			headers[i] = func(s string, c *ConfigProd) { c.Fact, _ = strconv.Atoi(s) }
-		case Tr("csv_header_stock_min"):
-			headers[i] = func(s string, c *ConfigProd) { c.Min, _ = strconv.Atoi(s) }
+		if fun, ok := mapper[h]; ok {
+			headers[i] = fun
 		}
 	}
 
 	for _, line := range out[1:] {
-		configProd := new(ConfigProd)
+		newLine := newLiner()
 		for k, fun := range headers {
-			fun(line[k], configProd)
+			fun(line[k], newLine)
 		}
-		config = append(config, *configProd)
+		appender(newLine)
 	}
-
-	return config
 }
 
 func inStock(config []ConfigProd) (its Items) {
@@ -215,7 +204,6 @@ func init() {
 func main() {
 
 	// LOGGING
-
 	logfile := loggingPrefix + Tr("file_name_log")
 	f, err1 := os.OpenFile(dir+"/"+logfile,
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -237,7 +225,24 @@ func main() {
 		os.Mkdir(dir, 0755)
 	}
 
-	config := getConfig()
+	mapper := map[string]func(s string, c interface{}){
+		Tr("csv_header_item_product"):                 func(s string, c interface{}) { c.(*ConfigProd).Prod = s },
+		Tr("csv_header_stock_unit"):                   func(s string, c interface{}) { c.(*ConfigProd).StockUnit = s },
+		Tr("csv_header_order_unit"):                   func(s string, c interface{}) { c.(*ConfigProd).OrderUnit = s },
+		Tr("csv_header_factor_stock_unit_order_unit"): func(s string, c interface{}) { c.(*ConfigProd).Fact, _ = strconv.Atoi(s) },
+		Tr("csv_header_stock_min"):                    func(s string, c interface{}) { c.(*ConfigProd).Min, _ = strconv.Atoi(s) },
+	}
+
+	config := make([]ConfigProd, 0)
+	newLiner := func() interface{} { return new(ConfigProd) }
+	appender := func(v interface{}) {
+		a := v.(*ConfigProd)
+		config = append(config, *a)
+	}
+
+	configFilename := configPrefix + Tr("file_name_config") + extension
+
+	csvToStruct(configFilename, mapper, newLiner, appender)
 
 	files, err3 := ioutil.ReadDir(dir)
 
@@ -326,34 +331,32 @@ func RouteFile(files []os.FileInfo) {
 }
 
 func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
-	f, err := os.Open(dir + "/" + path.String())
-	defer f.Close()
-	if err != nil {
-		return nil, err
+
+	mapper := map[string]func(s string, c interface{}){
+		Tr("csv_header_item_product"): func(s string, c interface{}) { c.(*Item).Prod = Prod(s) },
+		Tr("csv_header_item_value"): func(s string, c interface{}) {
+			val, _ := strconv.Atoi(s)
+			c.(*Item).Val = Val{val}
+		},
 	}
+
+	its := make([]Item, 0)
+	newLiner := func() interface{} { return new(Item) }
+	appender := func(v interface{}) {
+		a := v.(*Item)
+		its = append(its, *a)
+	}
+
+	csvToStruct(path.String(), mapper, newLiner, appender)
+	itsMap := itemArrayToMap(its)
 
 	switch path.Act {
 	case Tr("file_name_stock_in"):
-		its := []Item{}
-		err := gocsv.UnmarshalFile(f, &its)
-		if err != nil {
-			return nil, err
-		}
-		return skelet.InCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
+		return skelet.InCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
 	case Tr("file_name_stock_out"):
-		its := []Item{}
-		err := gocsv.UnmarshalFile(f, &its)
-		if err != nil {
-			return nil, err
-		}
-		return skelet.OutCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
+		return skelet.OutCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
 	case Tr("file_name_inventory"):
-		its := []Item{}
-		err := gocsv.UnmarshalFile(f, &its)
-		if err != nil {
-			return nil, err
-		}
-		return skelet.InventoryCmd{path.Stock, itemArrayToMap(its), path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
+		return skelet.InventoryCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
 
 	}
 	return nil, fmt.Errorf(Tr("no_action_for_filename_error")) // No action found
