@@ -1,4 +1,5 @@
 # stock-manager
+[![Build Status](https://drone.io/github.com/olivier5741/stock-manager/status.png)](https://drone.io/github.com/olivier5741/stock-manager/latest)
 Une simple gestion de stock via des fichiers .csv 
 (',' comme séparateur, uniquement des nombres entiers, pas d'accent ni de caractère spécial). 
 Le logiciel est disponible en [français](https://github.com/olivier5741/stock-manager/blob/master/cmd/main/fr-be.all.yaml) ainsi qu'en [anglais](https://github.com/olivier5741/stock-manager/blob/master/cmd/main/en-us.all.yaml).
