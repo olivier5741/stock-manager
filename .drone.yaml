@@ -1,3 +1,6 @@
+
+clone:
+  path: github.com/olivier5741/stock-manager
 build:
   image: golang:1.5
   commands:
