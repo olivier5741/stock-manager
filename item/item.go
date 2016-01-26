@@ -2,7 +2,6 @@ package item
 
 import (
 	"fmt"
-	//	"log"
 	"sort"
 	"strconv"
 )
@@ -77,11 +76,12 @@ func NewValFromUnitVals(units ...UnitVal) Val {
 }
 
 func AddVal(v1, v2 Val) (out Val, err error) {
+
+	out = CopyVal(v1)
+
 	if v1.Main != v2.Main {
 		err = fmt.Errorf("Cannot add two Val with different Main")
 	}
-
-	out = CopyVal(v1)
 
 	for _, v := range v2.Values() {
 		if old, ok := out.Vals[v.Id()]; ok {
@@ -92,50 +92,52 @@ func AddVal(v1, v2 Val) (out Val, err error) {
 	return
 }
 
-func SubVal(v1, v2 Val) (val Val, err error) {
+func SubVal(v1, v2 Val) (out Val, err error) {
+
+	out = CopyVal(v1)
+
 	if v1.Main != v2.Main {
 		err = fmt.Errorf("Cannot sub two Val with different Main")
 	}
 
-	val = CopyVal(v1)
-	with, without := v2.ValuesFactFilter()
-	val, err = stupidSubVal(val, without)
+	out = CopyVal(v1)
+	out, err = stupidSubVal(out, v2.valsWithout())
 
-	asc := mapToSlice(with)
-	sort.Sort(ByFactorAsc(asc))
+	for _, v := range v2.valsWithByFactorAsc() {
+		if old, ok := out.Vals[v.Id()]; !ok {
+			out.Vals[v.Id()] = UnitVal{v.Unit, -v.Val}
+		} else {
+			if old.Val >= v.Val || v.Val > out.TotalWith() {
+				out.Vals[v.Id()], err = SubUnitVal(old, v)
+				continue
+			}
+			current := out.valsWithByFactorAsc()
+			needed := valsUntilAboveLimit(current, v.Total())
+			sort.Sort(ByFactorDesc(needed))
+			missing := v.Total()
+			for i, n := range needed {
+				left := valsTotal(needed[i+1:])
 
-	for _, v := range asc {
-		if old, ok := val.Vals[v.Id()]; ok {
-			if old.Val >= v.Val || v.Val > val.TotalWith() {
-				val.Vals[v.Id()], err = SubUnitVal(old, v)
-			} else {
-				with1, _ := val.ValuesFactFilter()
-				current := mapToSlice(with1)
-				sort.Sort(ByFactorAsc(current))
-				needed := valsUntilAboveLimit(current, v.Val*v.Fact)
-				sort.Sort(ByFactorDesc(needed))
-				missing := v.Val * v.Fact
-				for i, n := range needed {
-					left := valsTotal(needed[i+1:])
-					if left < missing {
-						tosub := ((missing - left) / n.Fact)
-						if (tosub * n.Fact) != (missing - left) {
-							tosub += 1
-						}
-						val.Vals[n.Id()], _ = SubUnitVal(n, UnitVal{n.Unit, tosub})
-						missing = missing - (tosub * n.Fact)
-					} else if left > missing {
-						tosub := missing / n.Fact
-						val.Vals[n.Id()], _ = AddUnitVal(n, UnitVal{n.Unit, -tosub})
-						missing -= tosub * n.Fact
+				if left == missing {
+					continue
+				}
+
+				tosub := missing / n.Fact
+
+				if left < missing {
+					tosub = (missing - left) / n.Fact
+					if tosub*n.Fact != missing-left {
+						tosub += 1
 					}
 				}
-				if missing > 0 {
-					stupidSubVal(val, map[string]UnitVal{v.Id(): UnitVal{v.Unit, missing}})
-				}
+
+				out.Vals[n.Id()] = NewUnitValSub(n, tosub)
+				missing -= tosub * n.Fact
 			}
-		} else {
-			val.Vals[v.Id()] = UnitVal{v.Unit, -v.Val}
+			if missing > 0 {
+				stupidSubVal(out, map[string]UnitVal{v.Id(): UnitVal{v.Unit, missing}})
+			}
+
 		}
 	}
 
@@ -152,6 +154,10 @@ func (v Val) valsWith() (out map[string]UnitVal) {
 	return
 }
 
+func (v Val) valsWithByFactorAsc() []UnitVal {
+	return Val{Vals: v.valsWith()}.ValsByFactorAsc()
+}
+
 func (v Val) valsWithByFactorDesc() []UnitVal {
 	return Val{Vals: v.valsWith()}.ValsByFactorDesc()
 }
@@ -160,10 +166,10 @@ func (v Val) Redistribute() Val {
 	out := v.valsWithout()
 	lasts := make([]UnitVal, 0)
 	left := 0
-	for _, inVal := range v.valsWith() {
-		out[inVal.Id()] = NewUnitValSet(inVal, 0)
-		lasts = append(lasts, NewUnitValSet(inVal, 0))
-		left += inVal.Total()
+	for _, val := range v.valsWithByFactorDesc() {
+		out[val.Id()] = NewUnitValInit(val)
+		lasts = append(lasts, NewUnitValInit(val))
+		left += val.Total()
 		for _, l := range lasts {
 			out[l.Id()] = NewUnitValAdd(out[l.Id()], left/l.Fact)
 			left = left % l.Fact
@@ -172,29 +178,26 @@ func (v Val) Redistribute() Val {
 	return Val{v.Main, out}
 }
 
-func (v Val) Total() Val {
-	// total no using remainder
-	with, without := v.ValuesFactFilter()
-	in := Val{Vals: with}.ValsByFactorDesc() // Refactor this
-	out := Val{v.Main, without}
+func (v Val) Total() (out Val) {
+	out = Val{v.Main, v.valsWithout()}
+	with := v.valsWithByFactorDesc()
 	total := 0
-	for _, val := range in {
-		total += val.Val * val.Fact
+	for _, val := range with {
+		total += val.Total()
 	}
-	if len(in) > 0 {
-		smallest := in[len(in)-1]
-		out.Vals[smallest.Id()] = UnitVal{smallest.Unit, total / smallest.Fact}
+	if len(with) > 0 {
+		smallest := with[len(with)-1]
+		out.Vals[smallest.Id()] =
+			NewUnitValSet(smallest, total/smallest.Fact)
 	}
-	return out
+	return
 }
 
-func (v Val) TotalWith() int {
-	total := 0
-	with, _ := v.ValuesFactFilter()
-	for _, val := range with {
-		total += val.Fact * val.Val
+func (v Val) TotalWith() (total int) {
+	for _, val := range v.valsWith() {
+		total += val.Total()
 	}
-	return total
+	return
 }
 
 func CopyVal(v Val) Val {
@@ -226,13 +229,11 @@ func valsUntilAboveLimit(vals []UnitVal, limit int) []UnitVal {
 	return out
 }
 
-func valsTotal(vals []UnitVal) int {
-	// should all have a fact != 0
-	total := 0
+func valsTotal(vals []UnitVal) (total int) {
 	for _, v := range vals {
-		total += v.Fact * v.Val
+		total += v.Total()
 	}
-	return total
+	return
 }
 
 func copyMap(originalMap map[string]UnitVal) map[string]UnitVal {
@@ -270,8 +271,18 @@ func (v Val) ValsByFactorDesc() []UnitVal {
 	return out
 }
 
+func (v Val) ValsByFactorAsc() []UnitVal {
+	out := v.Values()
+	sort.Sort(ByFactorAsc(out))
+	return out
+}
+
 func (u UnitVal) Total() int {
 	return u.Fact * u.Val
+}
+
+func NewUnitValInit(prev UnitVal) UnitVal {
+	return UnitVal{prev.Unit, 0}
 }
 
 func NewUnitValAdd(prev UnitVal, add int) UnitVal {
@@ -335,7 +346,6 @@ func mapToSlice(m map[string]UnitVal) []UnitVal {
 	for _, v := range m {
 		out = append(out, v)
 	}
-	sort.Sort(ByFactorAsc(out))
 	return out
 }
 
