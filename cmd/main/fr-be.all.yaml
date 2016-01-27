@@ -1,48 +1,48 @@
 - id: csv_header_factor_stock_unit_order_unit
-  translation: Coeff.
+  translation: Factor
 - id: csv_header_item_product
   translation: Prod
 - id: csv_header_item_value
   translation: Val
 - id: csv_header_order_unit
-  translation: Unité Commande
+  translation: Order Unit
 - id: csv_header_stock_min
   translation: Min.
 - id: csv_header_stock_unit
-  translation: Unité Stock
+  translation: Stock Unit
 - id: error_dir_read
-  translation: Le dossier ne peut être lu
+  translation: Cannot read from directory
 - id: error_file_create
-  translation: Le fichier ne peut être créé
+  translation: Cannot create file
 - id: error_file_csv_unmarshal
-  translation: Le fichier csv ne peut être converti
+  translation: Cannot unmarshal file
 - id: error_file_csv_view_to
-  translation: La vue ne peut être convertie en csv
+  translation: Cannot marshal the view to csv
 - id: error_file_open
-  translation: Le fichier ne peut être ouvert
+  translation: Cannot open file
 - id: error_filename_no_action_from
-  translation: Une action ne peut être trouvée à partir de ce nom de fichier
+  translation: Cannot find action according to filename
 - id: error_filename_parse
-  translation: Ce nom de fichier ne peut être traité
+  translation: Cannot parse filename
 - id: error_query_stock
-  translation: La requête vers la base de donnée des stocks a échoué
+  translation: Cannot query stock database
 - id: file_name_config
   translation: config
 - id: file_name_inventory
-  translation: inventaire
+  translation: inventory
 - id: file_name_log
-  translation: erreurs
+  translation: errors
 - id: file_name_order
-  translation: commande
+  translation: order
 - id: file_name_product
-  translation: produits
+  translation: products
 - id: file_name_stock
   translation: stock
 - id: file_name_stock_in
-  translation: entrée
+  translation: in
 - id: file_name_stock_out
-  translation: sortie
+  translation: out
 - id: file_name_to_order
-  translation: à commander
+  translation: to order
 - id: file_prefix_draft
-  translation: en attente
+  translation: draft
