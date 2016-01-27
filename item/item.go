@@ -1,7 +1,6 @@
 package item
 
 import (
-	"fmt"
 	"sort"
 	"strconv"
 )
@@ -52,7 +51,7 @@ func (p Prod) String() string {
 	return string(p)
 }
 
-func NewValFromUnitVals(units ...UnitVal) Val {
+func NewVal(units ...UnitVal) Val {
 	vals := make(map[string]UnitVal, 0)
 	for _, u := range units {
 		vals[u.Id()] = u
@@ -60,32 +59,40 @@ func NewValFromUnitVals(units ...UnitVal) Val {
 	return Val{vals}
 }
 
-func AddVal(v1, v2 Val) (out Val, err error) {
+func NegVal(v Val) Val {
+	vals := make(map[string]UnitVal, 0)
+	for _, val := range v.Values() {
+		vals[val.Id()] = NewUnitValSet(val, -val.Val)
+	}
+	return Val{vals}
+}
+
+func AddVal(v1, v2 Val) (out Val) {
 
 	out = CopyVal(v1)
 
 	for _, v := range v2.Values() {
 		if old, ok := out.Vals[v.Id()]; ok {
-			v, err = AddUnitVal(old, v)
+			v = AddUnitVal(old, v)
 		}
 		out.Vals[v.Id()] = v
 	}
 	return
 }
 
-func SubVal(v1, v2 Val) (out Val, err error) {
+func SubVal(v1, v2 Val) (out Val) {
 
 	out = CopyVal(v1)
 
 	out = CopyVal(v1)
-	out, err = stupidSubVal(out, v2.valsWithout())
+	out = stupidSubVal(out, v2.valsWithout())
 
 	for _, v := range v2.valsWithByFactorAsc() {
 		if old, ok := out.Vals[v.Id()]; !ok {
 			out.Vals[v.Id()] = UnitVal{v.Unit, -v.Val}
 		} else {
 			if old.Val >= v.Val || v.Val > out.TotalWith() {
-				out.Vals[v.Id()], err = SubUnitVal(old, v)
+				out.Vals[v.Id()] = SubUnitVal(old, v)
 				continue
 			}
 			current := out.valsWithByFactorAsc()
@@ -119,24 +126,6 @@ func SubVal(v1, v2 Val) (out Val, err error) {
 	}
 
 	return
-}
-
-func (v Val) valsWithout() (out map[string]UnitVal) {
-	_, out = v.ValuesFactFilter()
-	return
-}
-
-func (v Val) valsWith() (out map[string]UnitVal) {
-	out, _ = v.ValuesFactFilter()
-	return
-}
-
-func (v Val) valsWithByFactorAsc() []UnitVal {
-	return Val{Vals: v.valsWith()}.ValsByFactorAsc()
-}
-
-func (v Val) valsWithByFactorDesc() []UnitVal {
-	return Val{Vals: v.valsWith()}.ValsByFactorDesc()
 }
 
 func (v Val) Redistribute() Val {
@@ -178,14 +167,32 @@ func (v Val) TotalWith() (total int) {
 }
 
 func CopyVal(v Val) Val {
-	return NewValFromUnitVals(v.Values()...)
+	return NewVal(v.Values()...)
 }
 
-func stupidSubVal(v1 Val, vals map[string]UnitVal) (val Val, err error) {
+func (v Val) valsWithout() (out map[string]UnitVal) {
+	_, out = v.ValuesFactFilter()
+	return
+}
+
+func (v Val) valsWith() (out map[string]UnitVal) {
+	out, _ = v.ValuesFactFilter()
+	return
+}
+
+func (v Val) valsWithByFactorAsc() []UnitVal {
+	return Val{Vals: v.valsWith()}.ValsByFactorAsc()
+}
+
+func (v Val) valsWithByFactorDesc() []UnitVal {
+	return Val{Vals: v.valsWith()}.ValsByFactorDesc()
+}
+
+func stupidSubVal(v1 Val, vals map[string]UnitVal) (val Val) {
 	val = CopyVal(v1)
 	for _, v := range vals {
 		if old, ok := val.Vals[v.Id()]; ok {
-			val.Vals[v.Id()], err = SubUnitVal(old, v)
+			val.Vals[v.Id()] = SubUnitVal(old, v)
 		} else {
 			val.Vals[v.Id()] = UnitVal{v.Unit, -v.Val}
 		}
@@ -276,36 +283,12 @@ func NewUnitValSet(prev UnitVal, set int) UnitVal {
 	return UnitVal{prev.Unit, set}
 }
 
-func AddUnitVal(u1, u2 UnitVal) (out UnitVal, err error) {
-	out, err = NewUnitValMergeInit(u1, u2)
-	out.Val = u1.Val + u2.Val
-	return
+func AddUnitVal(u1, u2 UnitVal) UnitVal {
+	return UnitVal{u1.Unit, u1.Val + u2.Val}
 }
 
-func SubUnitVal(u1, u2 UnitVal) (out UnitVal, err error) {
-	out, err = NewUnitValMergeInit(u1, u2)
-	out.Val = u1.Val - u2.Val
-	return
-}
-
-func NewUnitValMergeInit(u1, u2 UnitVal) (out UnitVal, err error) {
-	if u1.Unit.Name != u2.Unit.Name {
-		err = fmt.Errorf("Cannot merge two UnitVal with different Name")
-	}
-
-	unit := Unit{Name: u1.Name}
-
-	if u1.Unit.Fact == 0 {
-		unit.Fact = u2.Unit.Fact
-	} else if u2.Unit.Fact != 0 && u1.Unit.Fact != u2.Unit.Fact {
-		err = fmt.Errorf("Cannot merge two UnitVal with different Fact")
-	} else {
-		unit.Fact = u1.Unit.Fact
-	}
-
-	out = UnitVal{Unit: unit}
-
-	return
+func SubUnitVal(u1, u2 UnitVal) UnitVal {
+	return UnitVal{u1.Unit, u1.Val - u2.Val}
 }
 
 type ByFactorDesc []UnitVal
@@ -328,25 +311,25 @@ func mapToSlice(m map[string]UnitVal) []UnitVal {
 	return out
 }
 
-// func (its Items) Add(adds Items) {
-// 	for key, add := range adds {
-// 		if it, ok := its[key]; ok {
-// 			add.Val.T = it.Val.T + add.Val.T
-// 		}
-// 		its[key] = add
-// 	}
-// }
+func (its Items) Add(adds Items) {
+	for key, add := range adds {
+		if it, ok := its[key]; ok {
+			add.Val = AddVal(it.Val, add.Val)
+		}
+		its[key] = add
+	}
+}
 
-// func (its Items) Sub(subs Items) {
-// 	for key, sub := range subs {
-// 		if it, ok := its[key]; ok {
-// 			sub.Val.T = it.Val.T - sub.Val.T
-// 		} else {
-// 			sub.Val.T = -sub.Val.T
-// 		}
-// 		its[key] = sub
-// 	}
-// }
+func (its Items) Sub(subs Items) {
+	for key, sub := range subs {
+		if it, ok := its[key]; ok {
+			sub.Val = SubVal(it.Val, sub.Val)
+		} else {
+			sub.Val = NegVal(sub.Val)
+		}
+		its[key] = sub
+	}
+}
 
 // func (its Items) Missing(exps Items) (out Items) {
 // 	out = map[string]Item{}
@@ -362,11 +345,11 @@ func mapToSlice(m map[string]UnitVal) []UnitVal {
 // 	return
 // }
 
-// // I don't think I'm using this function
-// func (origs Items) Copy() (out Items) {
-// 	out = make(Items, len(origs))
-// 	for key, orig := range origs {
-// 		out[key] = orig
-// 	}
-// 	return
-// }
+// I don't think I'm using this function
+func (origs Items) Copy() (out Items) {
+	out = make(Items, len(origs))
+	for key, orig := range origs {
+		out[key] = orig
+	}
+	return
+}

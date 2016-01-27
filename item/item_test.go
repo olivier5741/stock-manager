@@ -13,7 +13,7 @@ var (
 )
 
 func TestAddVal(t *testing.T) {
-	v1 := NewValFromUnitVals([]UnitVal{
+	v1 := NewVal([]UnitVal{
 		{Cachet, 12},
 		{Tablette, 2},
 		{Boite, 2},
@@ -22,18 +22,18 @@ func TestAddVal(t *testing.T) {
 
 	t.Log(v1.String())
 
-	v2 := NewValFromUnitVals([]UnitVal{
+	v2 := NewVal([]UnitVal{
 		{Tablette, 3},
 		{Boite, 2},
 	}...)
 
 	t.Log(v2.String())
 
-	got, _ := AddVal(v1, v2)
+	got := AddVal(v1, v2)
 
 	t.Log(got.String())
 
-	exp := NewValFromUnitVals([]UnitVal{
+	exp := NewVal([]UnitVal{
 		{Cachet, 12},
 		{Tablette, 5},
 		{Boite, 4},
@@ -44,7 +44,7 @@ func TestAddVal(t *testing.T) {
 }
 
 func TestSubVal(t *testing.T) {
-	v1 := NewValFromUnitVals([]UnitVal{
+	v1 := NewVal([]UnitVal{
 		{Cachet, 12},
 		{Tablette, 2},
 		{Boite, 2},
@@ -53,7 +53,7 @@ func TestSubVal(t *testing.T) {
 
 	t.Log(v1.String())
 
-	v2 := NewValFromUnitVals([]UnitVal{
+	v2 := NewVal([]UnitVal{
 		{Cachet, 16},
 		{Tablette, 3},
 		{Boite, 2},
@@ -61,11 +61,11 @@ func TestSubVal(t *testing.T) {
 
 	t.Log(v2.String())
 
-	got, _ := SubVal(v1, v2)
+	got := SubVal(v1, v2)
 
 	t.Log(got.String())
 
-	exp := NewValFromUnitVals([]UnitVal{
+	exp := NewVal([]UnitVal{
 		{Cachet, 11},
 		{Tablette, 1},
 		{Boite, 9},
@@ -78,7 +78,7 @@ func TestSubVal(t *testing.T) {
 func TestRedistribute(t *testing.T) {
 	// l'unité principale ne peut valoir 0
 
-	v1 := NewValFromUnitVals([]UnitVal{
+	v1 := NewVal([]UnitVal{
 		{Cachet, 50},
 		{Tablette, 3},
 		{Boite, 2},
@@ -90,7 +90,7 @@ func TestRedistribute(t *testing.T) {
 
 	t.Log(got.String())
 
-	exp := NewValFromUnitVals([]UnitVal{
+	exp := NewVal([]UnitVal{
 		{Cachet, 5},
 		{Tablette, 0},
 		{Boite, 4},
@@ -100,7 +100,7 @@ func TestRedistribute(t *testing.T) {
 }
 
 func TestTotal(t *testing.T) {
-	v1 := NewValFromUnitVals([]UnitVal{
+	v1 := NewVal([]UnitVal{
 		{Inconnu, 21},
 		{Cachet, 50},
 		{Tablette, 3},
@@ -113,7 +113,7 @@ func TestTotal(t *testing.T) {
 
 	t.Log(got.String())
 
-	exp := NewValFromUnitVals([]UnitVal{
+	exp := NewVal([]UnitVal{
 		{Inconnu, 21},
 		{Cachet, 185},
 	}...)
