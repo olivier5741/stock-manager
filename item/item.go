@@ -6,10 +6,6 @@ import (
 	"strconv"
 )
 
-type Ider interface {
-	Id() string
-}
-
 type Items map[string]Item
 
 type Item struct {
@@ -32,17 +28,22 @@ type Unit struct {
 }
 
 func (u Unit) Id() string {
-	return u.Name
+	return u.String()
+}
+
+func (u Unit) String() string {
+	return u.Name + "(" + strconv.Itoa(u.Fact) + ")"
 }
 
 type Val struct {
-	Main string // Main fact should always be common factor of all the other unit.Fact
 	Vals map[string]UnitVal
 }
 
-func (v Val) String() string {
-	// TO DO : print all value
-	return strconv.Itoa(int(v.Vals[v.Main].Val))
+func (v Val) String() (s string) {
+	for _, u := range v.ValsByFactorDesc() {
+		s += u.String() + ", "
+	}
+	return
 }
 
 type Prod string
@@ -51,37 +52,17 @@ func (p Prod) String() string {
 	return string(p)
 }
 
-func NewVal(units ...string) Val {
-	vals := make(map[string]UnitVal, 0)
-	for _, u := range units {
-		vals[u] = UnitVal{Unit{u, 0}, 0}
-	}
-	return Val{units[0], vals}
-}
-
-func NewValFromUnits(units ...Unit) Val {
-	vals := make(map[string]UnitVal, 0)
-	for _, u := range units {
-		vals[u.Id()] = UnitVal{u, 0}
-	}
-	return Val{units[0].Name, vals}
-}
-
 func NewValFromUnitVals(units ...UnitVal) Val {
 	vals := make(map[string]UnitVal, 0)
 	for _, u := range units {
 		vals[u.Id()] = u
 	}
-	return Val{units[0].Name, vals}
+	return Val{vals}
 }
 
 func AddVal(v1, v2 Val) (out Val, err error) {
 
 	out = CopyVal(v1)
-
-	if v1.Main != v2.Main {
-		err = fmt.Errorf("Cannot add two Val with different Main")
-	}
 
 	for _, v := range v2.Values() {
 		if old, ok := out.Vals[v.Id()]; ok {
@@ -95,10 +76,6 @@ func AddVal(v1, v2 Val) (out Val, err error) {
 func SubVal(v1, v2 Val) (out Val, err error) {
 
 	out = CopyVal(v1)
-
-	if v1.Main != v2.Main {
-		err = fmt.Errorf("Cannot sub two Val with different Main")
-	}
 
 	out = CopyVal(v1)
 	out, err = stupidSubVal(out, v2.valsWithout())
@@ -135,7 +112,7 @@ func SubVal(v1, v2 Val) (out Val, err error) {
 				missing -= tosub * n.Fact
 			}
 			if missing > 0 {
-				stupidSubVal(out, map[string]UnitVal{v.Id(): UnitVal{v.Unit, missing}})
+				stupidSubVal(out, map[string]UnitVal{v.Id(): {v.Unit, missing}})
 			}
 
 		}
@@ -175,11 +152,11 @@ func (v Val) Redistribute() Val {
 			left = left % l.Fact
 		}
 	}
-	return Val{v.Main, out}
+	return Val{out}
 }
 
 func (v Val) Total() (out Val) {
-	out = Val{v.Main, v.valsWithout()}
+	out = Val{v.valsWithout()}
 	with := v.valsWithByFactorDesc()
 	total := 0
 	for _, val := range with {
@@ -201,9 +178,7 @@ func (v Val) TotalWith() (total int) {
 }
 
 func CopyVal(v Val) Val {
-	out := NewValFromUnitVals(v.Values()...)
-	out.Main = v.Main
-	return out
+	return NewValFromUnitVals(v.Values()...)
 }
 
 func stupidSubVal(v1 Val, vals map[string]UnitVal) (val Val, err error) {
@@ -275,6 +250,10 @@ func (v Val) ValsByFactorAsc() []UnitVal {
 	out := v.Values()
 	sort.Sort(ByFactorAsc(out))
 	return out
+}
+
+func (u UnitVal) String() string {
+	return strconv.Itoa(u.Val) + " " + u.Unit.String()
 }
 
 func (u UnitVal) Total() int {

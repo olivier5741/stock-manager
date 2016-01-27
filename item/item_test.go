@@ -6,10 +6,10 @@ import (
 
 var (
 	Inconnu  = Unit{"inconnu", 0}
-	Cachet   = Unit{"cachet", 1}
-	Tablette = Unit{"Tablette", 15}
-	Boite    = Unit{"boîte", 45}
-	Carton   = Unit{"Carton", 450}
+	Cachet   = Unit{"pill.", 1}
+	Tablette = Unit{"tab.", 15}
+	Boite    = Unit{"b.", 45}
+	Carton   = Unit{"cart.", 450}
 )
 
 func TestAddVal(t *testing.T) {
@@ -20,12 +20,18 @@ func TestAddVal(t *testing.T) {
 		{Carton, 1},
 	}...)
 
+	t.Log(v1.String())
+
 	v2 := NewValFromUnitVals([]UnitVal{
 		{Tablette, 3},
 		{Boite, 2},
 	}...)
 
+	t.Log(v2.String())
+
 	got, _ := AddVal(v1, v2)
+
+	t.Log(got.String())
 
 	exp := NewValFromUnitVals([]UnitVal{
 		{Cachet, 12},
@@ -45,13 +51,19 @@ func TestSubVal(t *testing.T) {
 		{Carton, 1},
 	}...)
 
+	t.Log(v1.String())
+
 	v2 := NewValFromUnitVals([]UnitVal{
 		{Cachet, 16},
 		{Tablette, 3},
 		{Boite, 2},
 	}...)
 
+	t.Log(v2.String())
+
 	got, _ := SubVal(v1, v2)
+
+	t.Log(got.String())
 
 	exp := NewValFromUnitVals([]UnitVal{
 		{Cachet, 11},
@@ -72,7 +84,11 @@ func TestRedistribute(t *testing.T) {
 		{Boite, 2},
 	}...)
 
+	t.Log(v1.String())
+
 	got := v1.Redistribute()
+
+	t.Log(got.String())
 
 	exp := NewValFromUnitVals([]UnitVal{
 		{Cachet, 5},
@@ -91,7 +107,11 @@ func TestTotal(t *testing.T) {
 		{Boite, 2},
 	}...)
 
+	t.Log(v1.String())
+
 	got := v1.Total()
+
+	t.Log(got.String())
 
 	exp := NewValFromUnitVals([]UnitVal{
 		{Inconnu, 21},
@@ -102,9 +122,6 @@ func TestTotal(t *testing.T) {
 }
 
 func ValEqualCheck(t *testing.T, gots, exps Val) {
-	if gots.Main != exps.Main {
-		t.Errorf("Main %+v of val %+v is not the same as expected %+v (val %+v)", gots.Main, gots, exps.Main, exps)
-	}
 
 	for key, got := range gots.Vals {
 		if exp, ok := exps.Vals[key]; !ok {
