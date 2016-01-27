@@ -16,9 +16,80 @@ func (i Item) String() string {
 	return i.Prod.String() + ": " + i.Val.String()
 }
 
+func (its Items) Add(adds Items) {
+	for key, add := range adds {
+		if it, ok := its[key]; ok {
+			add.Val = AddVal(it.Val, add.Val)
+		}
+		its[key] = add
+	}
+}
+
+func (its Items) Sub(subs Items) {
+	for key, sub := range subs {
+		if it, ok := its[key]; ok {
+			sub.Val = SubVal(it.Val, sub.Val)
+		} else {
+			sub.Val = NegVal(sub.Val)
+		}
+		its[key] = sub
+	}
+}
+
+func (its Items) Missing(exps Items) (out Items) {
+	out = map[string]Item{}
+	for key, exp := range exps {
+		if it, ok := its[key]; ok {
+			if diff, no, intDiff := Diff(exp.Val, it.Val); no && intDiff > 0 {
+				out[key] = Item{it.Prod, diff}
+			}
+		} else {
+			out[key] = Item{exp.Prod, CopyVal(exp.Val)}
+		}
+	}
+	return
+}
+
+// I don't think I'm using this function
+func (origs Items) Copy() (out Items) {
+	out = make(Items, len(origs))
+	for key, orig := range origs {
+		out[key] = orig
+	}
+	return
+}
+
+type Val struct {
+	Vals map[string]UnitVal
+}
+
+func (v Val) String() (s string) {
+	for _, u := range v.ValsByFactorDesc() {
+		s += u.String() + ", "
+	}
+	return
+}
+
 type UnitVal struct {
 	Unit
 	Val int
+}
+
+func (u UnitVal) String() string {
+	return strconv.Itoa(u.Val) + " " + u.Unit.String()
+}
+
+func (u UnitVal) Total() int {
+	return u.Fact * u.Val
+}
+
+type UnitValFloat struct {
+	Unit
+	Val float64
+}
+
+func (u UnitValFloat) String() string {
+	return strconv.FormatFloat(u.Val, 'f', 2, 64) + " " + u.Unit.String()
 }
 
 type Unit struct {
@@ -32,17 +103,6 @@ func (u Unit) Id() string {
 
 func (u Unit) String() string {
 	return u.Name + "(" + strconv.Itoa(u.Fact) + ")"
-}
-
-type Val struct {
-	Vals map[string]UnitVal
-}
-
-func (v Val) String() (s string) {
-	for _, u := range v.ValsByFactorDesc() {
-		s += u.String() + ", "
-	}
-	return
 }
 
 type Prod string
@@ -128,6 +188,13 @@ func SubVal(v1, v2 Val) (out Val) {
 	return
 }
 
+func Diff(v1, v2 Val) (out Val, noWithout bool, diff int) {
+	out = SubVal(v1, v2).Redistribute()
+	noWithout = len(out.valsWithout()) == 0
+	diff = out.TotalWith()
+	return
+}
+
 func (v Val) Redistribute() Val {
 	out := v.valsWithout()
 	lasts := make([]UnitVal, 0)
@@ -157,6 +224,14 @@ func (v Val) Total() (out Val) {
 			NewUnitValSet(smallest, total/smallest.Fact)
 	}
 	return
+}
+
+func (v Val) TotalWithRound(u Unit) (out UnitValFloat) {
+	total := 0.0
+	for _, val := range v.valsWith() {
+		total += float64(val.Total()) / float64(u.Fact)
+	}
+	return UnitValFloat{u, total}
 }
 
 func (v Val) TotalWith() (total int) {
@@ -259,14 +334,6 @@ func (v Val) ValsByFactorAsc() []UnitVal {
 	return out
 }
 
-func (u UnitVal) String() string {
-	return strconv.Itoa(u.Val) + " " + u.Unit.String()
-}
-
-func (u UnitVal) Total() int {
-	return u.Fact * u.Val
-}
-
 func NewUnitValInit(prev UnitVal) UnitVal {
 	return UnitVal{prev.Unit, 0}
 }
@@ -309,47 +376,4 @@ func mapToSlice(m map[string]UnitVal) []UnitVal {
 		out = append(out, v)
 	}
 	return out
-}
-
-func (its Items) Add(adds Items) {
-	for key, add := range adds {
-		if it, ok := its[key]; ok {
-			add.Val = AddVal(it.Val, add.Val)
-		}
-		its[key] = add
-	}
-}
-
-func (its Items) Sub(subs Items) {
-	for key, sub := range subs {
-		if it, ok := its[key]; ok {
-			sub.Val = SubVal(it.Val, sub.Val)
-		} else {
-			sub.Val = NegVal(sub.Val)
-		}
-		its[key] = sub
-	}
-}
-
-// func (its Items) Missing(exps Items) (out Items) {
-// 	out = map[string]Item{}
-// 	for key, exp := range exps {
-// 		if it, ok := its[key]; ok {
-// 			if diff := exp.Val.T - it.Val.T; diff > 0 {
-// 				out[key] = Item{it.Prod, Val{diff}}
-// 			}
-// 		} else {
-// 			out[key] = Item{exp.Prod, Val{exp.Val.T}}
-// 		}
-// 	}
-// 	return
-// }
-
-// I don't think I'm using this function
-func (origs Items) Copy() (out Items) {
-	out = make(Items, len(origs))
-	for key, orig := range origs {
-		out[key] = orig
-	}
-	return
 }

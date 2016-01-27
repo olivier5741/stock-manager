@@ -3,7 +3,8 @@ package stock
 import (
 	. "github.com/olivier5741/stock-manager/item"
 	. "github.com/olivier5741/stock-manager/skelet"
-	. "github.com/olivier5741/stock-manager/stock"
+	. "github.com/olivier5741/stock-manager/stock/main"
+	. "github.com/olivier5741/stock-manager/stock/skelet"
 	"time"
 )
 
