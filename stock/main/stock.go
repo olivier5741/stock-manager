@@ -4,6 +4,7 @@ import (
 	. "github.com/olivier5741/stock-manager/item"
 	. "github.com/olivier5741/stock-manager/skelet"
 	. "github.com/olivier5741/stock-manager/stock/skelet"
+	"log"
 )
 
 type Stock struct {
@@ -21,14 +22,22 @@ func FromActions(acts []interface{}, id string) Ider {
 		switch act := act.(type) {
 		case In:
 			stock.Items.Add(act.Items)
+			log.Println("ITEMS AFTER IN")
+			log.Println(stock.Items)
 		case Out:
 			stock.Items.Sub(act.Items)
+			log.Println("ITEMS AFTER OUT")
+			log.Println(stock.Items)
 		case Inventory:
 			stock.Items = act.Items.Copy()
+			log.Println("ITEMS AFTER INV")
+			log.Println(stock.Items)
 		case Rename:
 			stock.Name = act.Name
 		}
 	}
+	log.Println("ITEMS")
+	log.Println(stock.Items)
 	return stock
 }
 

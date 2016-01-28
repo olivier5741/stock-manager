@@ -1,0 +1,60 @@
+{"level":"debug","msg":"2016-01-19-n°1-entrée.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°1 entrée]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-19-n°2-sortie.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°2 sortie]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-19-n°3-inventaire.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°3 inventaire]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-19-n°4-entrée.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°4 entrée]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-19-n°5-entrée.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°5 entrée]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-27-n°1-entrée-2016.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°1 entrée 2016]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-27-n°2-sortie-2016.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°2 sortie 2016]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-27-n°3-inventaire-2016.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°3 inventaire 2016]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-27-n°4-commande-2016.csv","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°4 commande 2016]","time":"2016-01-28T17:17:00+01:00"}
+{"err":"no_action_for_filename_error","filename":"2016-01-27-n°4-commande-2016.csv","level":"error","msg":"Le fichier csv ne peut être converti","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"map[]","time":"2016-01-28T17:17:00+01:00"}
+{"level":"debug","msg":"2016-01-19-n°1-entrée.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°1 entrée]","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-19-n°2-sortie.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°2 sortie]","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-19-n°3-inventaire.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°3 inventaire]","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-19-n°4-entrée.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°4 entrée]","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-19-n°5-entrée.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°5 entrée]","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-27-n°1-entrée-2016.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°1 entrée 2016]","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-27-n°2-sortie-2016.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°2 sortie 2016]","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-27-n°3-inventaire-2016.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°3 inventaire 2016]","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-27-n°4-commande-2016.csv","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°4 commande 2016]","time":"2016-01-28T17:18:01+01:00"}
+{"err":"no_action_for_filename_error","filename":"2016-01-27-n°4-commande-2016.csv","level":"error","msg":"Le fichier csv ne peut être converti","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"0","time":"2016-01-28T17:18:01+01:00"}
+{"level":"debug","msg":"2016-01-19-n°1-entrée.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°1 entrée]","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"2016-01-19-n°2-sortie.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°2 sortie]","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"2016-01-19-n°3-inventaire.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°3 inventaire]","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"2016-01-19-n°4-entrée.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°4 entrée]","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"2016-01-19-n°5-entrée.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 19 n°5 entrée]","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"2016-01-27-n°1-entrée-2016.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°1 entrée 2016]","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"2016-01-27-n°2-sortie-2016.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°2 sortie 2016]","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"2016-01-27-n°3-inventaire-2016.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°3 inventaire 2016]","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"2016-01-27-n°4-commande-2016.csv","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"[2016 01 27 n°4 commande 2016]","time":"2016-01-28T17:18:35+01:00"}
+{"err":"no_action_for_filename_error","filename":"2016-01-27-n°4-commande-2016.csv","level":"error","msg":"Le fichier csv ne peut être converti","time":"2016-01-28T17:18:35+01:00"}
+{"level":"debug","msg":"\u0026{bievre map[]}","time":"2016-01-28T17:18:35+01:00"}

@@ -39,7 +39,7 @@ var (
 	loggingPrefix   = "l" + sep
 	numberPrefix    = "n°"
 
-	base = Unit{"Base", 0}
+	base = Unit{"Base", 1}
 
 	repo  = stock.MakeDummyStockRepository()
 	endPt = stock.EndPt{Db: repo}
@@ -119,6 +119,8 @@ func inStock(config []ConfigProd) (its Items) {
 
 	its = stock1.(*stockBL.Stock).Items.Copy()
 
+	log.Debug(stock1)
+
 	for _, prod := range config {
 		if _, ok := its[prod.Prod]; !ok {
 			its[prod.Prod] = Item{Prod(prod.Prod), NewVal(UnitVal{base, 0})}
@@ -135,7 +137,7 @@ func missing(config []ConfigProd, s Items) Items {
 func mapItem(its Items) [][]string {
 	out := make([][]string, 0)
 	for _, it := range its {
-		out = append(out, []string{it.Prod.String(), it.Val.String()})
+		out = append(out, []string{it.Prod.String(), strconv.Itoa(it.Val.TotalWith())})
 	}
 	return out
 }
@@ -153,7 +155,7 @@ func mapItemsMap(its map[string]Items) map[string]map[string]string {
 	for date, it := range its {
 		newRow := make(map[string]string)
 		for prod, val := range it {
-			newRow[prod] = val.Val.String()
+			newRow[prod] = strconv.Itoa(val.Val.TotalWith())
 		}
 		out[date] = newRow
 	}
@@ -218,9 +220,9 @@ func main() {
 	}
 	defer f.Close()
 
-	log.SetOutput(f)
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.ErrorLevel)
+	//log.SetOutput(f)
+	//log.SetFormatter(&log.JSONFormatter{})
+	log.SetLevel(log.DebugLevel)
 
 	// PROGRAM
 
@@ -387,8 +389,10 @@ func ParseFilename(s string) (f Filename, err error) {
 
 	if len(args) == 6 {
 		f.Status = args[0]
-		args = args[1:]
+		args = args[0:]
 	}
+
+	log.Debug(args)
 
 	//Date
 	date, err := time.Parse(TimeFormat, args[0]+sep+args[1]+sep+args[2])
