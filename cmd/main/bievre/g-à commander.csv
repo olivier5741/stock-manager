@@ -1,2 +1,2 @@
-Prod,Val
-aspirine(plaq.),395
+Prod,Val 1,Unit 1,Val 2,Unit 2,Val 3,Unit 3,Val 4,Unit 4
+aspirine,395,Base(1),0,Pill.(1)

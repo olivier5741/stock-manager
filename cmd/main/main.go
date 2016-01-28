@@ -134,10 +134,35 @@ func missing(config []ConfigProd, s Items) Items {
 	return s.Missing(GetMissingItems(config))
 }
 
-func mapItem(its Items) [][]string {
-	out := make([][]string, 0)
+func mapItem(v Item, unitNb int) []string {
+	s := make([]string, unitNb*2+1)
+	s[0] = v.Prod.String()
+	count := 1
+	for _, u := range v.Val.Vals {
+		if count == unitNb*2+1 {
+			break
+		}
+		s[count] = strconv.Itoa(u.Val)
+		s[count+1] = u.Unit.String()
+		count += 2
+	}
+	return s
+}
+
+func maxUnit(its Items) (max int) {
 	for _, it := range its {
-		out = append(out, []string{it.Prod.String(), strconv.Itoa(it.Val.TotalWith())})
+		if len(it.Val.Vals) > max {
+			max = len(it.Val.Vals)
+		}
+	}
+	return
+}
+
+func mapItems(its Items) [][]string {
+	out := make([][]string, 0)
+	max := maxUnit(its)
+	for _, it := range its {
+		out = append(out, mapItem(it, max))
 	}
 	return out
 }
@@ -145,7 +170,7 @@ func mapItem(its Items) [][]string {
 func mapConfigProd(cs []ConfigProd) [][]string {
 	out := make([][]string, 0)
 	for _, c := range cs {
-		out = append(out, []string{c.Prod, ""})
+		out = append(out, mapItem(Item{Prod(c.Prod), NewVal(UnitVal{base, 0})}, 1))
 	}
 	return out
 }
@@ -262,24 +287,29 @@ func main() {
 
 	iStock := inStock(config).Copy()
 
-	prodValHeader := []string{Tr("csv_header_item_product"), Tr("csv_header_item_value")}
+	prodValHeader := []string{Tr("csv_header_item_product"),
+		Tr("csv_header_item_value", 1), Tr("csv_header_item_unit", 1),
+		Tr("csv_header_item_value", 2), Tr("csv_header_item_unit", 2),
+		Tr("csv_header_item_value", 3), Tr("csv_header_item_unit", 3),
+		Tr("csv_header_item_value", 4), Tr("csv_header_item_unit", 4),
+	}
 	prodValRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(false) }
 	prodEvolRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(true) }
 
 	TableView{"bievre", generatedPrefix + Tr("file_name_stock") + extension,
-		strtab.NewTable(prodValHeader, mapItem(iStock)...), prodValRender}.Show()
+		strtab.NewTable(prodValHeader, mapItems(iStock)...), prodValRender}.Show()
 
 	TableView{"bievre", draftFileName(3, Tr("file_name_inventory")),
-		strtab.NewTable(prodValHeader, mapItem(iStock)...), prodValRender}.Show()
+		strtab.NewTable(prodValHeader, mapItems(iStock)...), prodValRender}.Show()
 
 	//Missing
 	missing := missing(config, iStock)
 
 	TableView{"bievre", generatedPrefix + Tr("file_name_to_order") + extension,
-		strtab.NewTable(prodValHeader, mapItem(missing)...), prodValRender}.Show()
+		strtab.NewTable(prodValHeader, mapItems(missing)...), prodValRender}.Show()
 
 	TableView{"bievre", draftFileName(4, Tr("file_name_order")),
-		strtab.NewTable(prodValHeader, mapItem(missing)...), prodValRender}.Show()
+		strtab.NewTable(prodValHeader, mapItems(missing)...), prodValRender}.Show()
 
 	TableView{"bievre", draftFileName(1, Tr("file_name_stock_in")),
 		strtab.NewTable(prodValHeader, mapConfigProd(config)...), prodValRender}.Show()
@@ -337,13 +367,28 @@ func RouteFile(files []os.FileInfo) {
 
 func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
+	// not very safe
+	truc := 0
+
+	valFunc := func(s string, c interface{}) {
+		val, _ := strconv.Atoi(s)
+		truc = val
+	}
+
+	unitFunc := func(s string, c interface{}) {
+		c.(*Item).Val = NewVal(UnitVal{NewUnit(s), truc})
+	}
 	// should put this in a local type
 	mapper := map[string]func(s string, c interface{}){
-		Tr("csv_header_item_product"): func(s string, c interface{}) { c.(*Item).Prod = Prod(s) },
-		Tr("csv_header_item_value"): func(s string, c interface{}) {
-			val, _ := strconv.Atoi(s)
-			c.(*Item).Val = NewVal(UnitVal{base, val})
-		},
+		Tr("csv_header_item_product"):  func(s string, c interface{}) { c.(*Item).Prod = Prod(s) },
+		Tr("csv_header_item_value", 1): valFunc,
+		Tr("csv_header_item_value", 2): valFunc,
+		Tr("csv_header_item_value", 3): valFunc,
+		Tr("csv_header_item_value", 4): valFunc,
+		Tr("csv_header_item_unit", 1):  unitFunc,
+		Tr("csv_header_item_unit", 2):  unitFunc,
+		Tr("csv_header_item_unit", 3):  unitFunc,
+		Tr("csv_header_item_unit", 4):  unitFunc,
 	}
 
 	its := make([]Item, 0)

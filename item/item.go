@@ -1,8 +1,10 @@
 package item
 
 import (
+	"log"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 type Items map[string]Item
@@ -73,6 +75,20 @@ func (v Val) String() (s string) {
 type UnitVal struct {
 	Unit
 	Val int
+}
+
+func NewUnit(s string) Unit {
+	s = strings.TrimSuffix(s, ")")
+	ss := strings.Split(s, "(")
+	log.Println(ss)
+	u := Unit{"unknown", 0}
+	if len(ss) > 0 {
+		u.Name = ss[0]
+	}
+	if len(ss) > 1 {
+		u.Fact, _ = strconv.Atoi(ss[1])
+	}
+	return u
 }
 
 func (u UnitVal) String() string {
