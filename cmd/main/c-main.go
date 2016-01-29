@@ -198,7 +198,7 @@ func main() {
 	}
 	defer f.Close()
 
-	//log.SetOutput(f)
+	log.SetOutput(f)
 	//log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(log.DebugLevel)
 
