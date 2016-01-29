@@ -200,7 +200,7 @@ func main() {
 
 	log.SetOutput(f)
 	//log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.ErrorLevel)
 
 	files, err3 := ioutil.ReadDir("./")
 
