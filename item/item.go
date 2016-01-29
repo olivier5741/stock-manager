@@ -52,6 +52,14 @@ func (its Items) Missing(exps Items) (out Items) {
 	return
 }
 
+func (its Items) Empty() (out Items) {
+	out = map[string]Item{}
+	for key, it := range its {
+		out[key] = Item{it.Prod, it.Val.Empty()}
+	}
+	return
+}
+
 // I don't think I'm using this function
 func (origs Items) Copy() (out Items) {
 	out = make(Items, len(origs))
@@ -135,6 +143,14 @@ func NewVal(units ...UnitVal) Val {
 	return Val{vals}
 }
 
+func (v Val) Empty() (out Val) {
+	vals := make(map[string]UnitVal, 0)
+	for k, u := range v.Vals {
+		vals[k] = NewUnitValSet(u, 0)
+	}
+	return Val{vals}
+}
+
 func NegVal(v Val) Val {
 	vals := make(map[string]UnitVal, 0)
 	for _, val := range v.Values() {
@@ -157,6 +173,9 @@ func AddVal(v1, v2 Val) (out Val) {
 }
 
 func SubVal(v1, v2 Val) (out Val) {
+	log.Println("SUB")
+	log.Println(v1)
+	log.Println(v2)
 
 	out = CopyVal(v1)
 

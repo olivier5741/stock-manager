@@ -26,6 +26,8 @@ func FromActions(acts []interface{}, id string) Ider {
 			log.Println(stock.Items)
 		case Out:
 			stock.Items.Sub(act.Items)
+			log.Println("Act Items")
+			log.Println(act.Items)
 			log.Println("ITEMS AFTER OUT")
 			log.Println(stock.Items)
 		case Inventory:
@@ -64,6 +66,8 @@ func (s *Stock) SubmitIn(i InCmd) (e In, err error) {
 }
 
 func (s *Stock) SubmitOut(o OutCmd) (e Out, err error) {
+	log.Println("SubmitOut")
+	log.Println(o.Items)
 	s.Items.Sub(o.Items)
 	e = Out{o.Items}
 	return
