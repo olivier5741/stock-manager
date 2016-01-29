@@ -31,8 +31,6 @@ var (
 	csvSuff    = ".csv"
 	TimeFormat = "2006" + sep + "01" + sep + "02"
 
-	dir = "bievre"
-
 	extension       = ".csv"
 	configPrefix    = "c" + sep
 	generatedPrefix = "g" + sep
@@ -69,7 +67,7 @@ func itemArrayToMap(items []Item) (out Items) {
 func csvToStruct(filename string, mapper map[string]func(s string, c interface{}),
 	newLiner func() interface{}, appender func(interface{})) {
 
-	file, err2 := os.OpenFile(dir+"/"+filename, os.O_CREATE, 0666)
+	file, err2 := os.OpenFile(filename, os.O_CREATE, 0666)
 	defer file.Close()
 	if err2 != nil {
 		log.WithFields(log.Fields{
@@ -110,7 +108,7 @@ func csvToStruct(filename string, mapper map[string]func(s string, c interface{}
 }
 
 func inStock(config []ConfigProd) (its Items) {
-	stock1, err4 := endPt.Db.Get("bievre")
+	stock1, err4 := endPt.Db.Get("main")
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
@@ -199,7 +197,7 @@ type TableView struct {
 }
 
 func (t TableView) Show() {
-	f, err := os.Create(t.Path + "/" + t.Title)
+	f, err := os.Create(t.Title)
 
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -226,8 +224,8 @@ func (t TableView) Show() {
 }
 
 func init() {
-	i18n.MustLoadTranslationFile("en-us.all.yaml")
-	i18n.MustLoadTranslationFile("fr-be.all.yaml")
+	i18n.MustLoadTranslationFile("c-int/en-us.all.yaml")
+	i18n.MustLoadTranslationFile("c-int/fr-be.all.yaml")
 	Tr, _ = i18n.Tfunc("fr-be")
 }
 
@@ -235,7 +233,7 @@ func main() {
 
 	// LOGGING
 	logfile := loggingPrefix + Tr("file_name_log")
-	f, err1 := os.OpenFile(dir+"/"+logfile,
+	f, err1 := os.OpenFile(logfile,
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err1 != nil {
 		log.WithFields(log.Fields{
@@ -250,10 +248,6 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 
 	// PROGRAM
-
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		os.Mkdir(dir, 0755)
-	}
 
 	mapper := map[string]func(s string, c interface{}){
 		Tr("csv_header_item_product"):                 func(s string, c interface{}) { c.(*ConfigProd).Prod = s },
@@ -274,11 +268,10 @@ func main() {
 
 	csvToStruct(configFilename, mapper, newLiner, appender)
 
-	files, err3 := ioutil.ReadDir(dir)
+	files, err3 := ioutil.ReadDir("./")
 
 	if err3 != nil {
 		log.WithFields(log.Fields{
-			"dir": dir,
 			"err": err3,
 		}).Error(Tr("error_dir_read"))
 	}
@@ -296,29 +289,29 @@ func main() {
 	prodValRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(false) }
 	prodEvolRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(true) }
 
-	TableView{"bievre", generatedPrefix + Tr("file_name_stock") + extension,
+	TableView{"main", generatedPrefix + Tr("file_name_stock") + extension,
 		strtab.NewTable(prodValHeader, mapItems(iStock)...), prodValRender}.Show()
 
-	TableView{"bievre", draftFileName(3, Tr("file_name_inventory")),
+	TableView{"main", draftFileName(3, Tr("file_name_inventory")),
 		strtab.NewTable(prodValHeader, mapItems(iStock)...), prodValRender}.Show()
 
 	//Missing
 	missing := missing(config, iStock)
 
-	TableView{"bievre", generatedPrefix + Tr("file_name_to_order") + extension,
+	TableView{"main", generatedPrefix + Tr("file_name_to_order") + extension,
 		strtab.NewTable(prodValHeader, mapItems(missing)...), prodValRender}.Show()
 
-	TableView{"bievre", draftFileName(4, Tr("file_name_order")),
+	TableView{"main", draftFileName(4, Tr("file_name_order")),
 		strtab.NewTable(prodValHeader, mapItems(missing)...), prodValRender}.Show()
 
-	TableView{"bievre", draftFileName(1, Tr("file_name_stock_in")),
+	TableView{"main", draftFileName(1, Tr("file_name_stock_in")),
 		strtab.NewTable(prodValHeader, mapConfigProd(config)...), prodValRender}.Show()
 
-	TableView{"bievre", draftFileName(2, Tr("file_name_stock_out")),
+	TableView{"main", draftFileName(2, Tr("file_name_stock_out")),
 		strtab.NewTable(prodValHeader, mapConfigProd(config)...), prodValRender}.Show()
 
-	TableView{"bievre", generatedPrefix + Tr("file_name_product") + extension,
-		strtab.NewTableFromMap(mapItemsMap(endPt.ProdValEvolution("bievre"))).Transpose(), prodEvolRender}.Show()
+	TableView{"main", generatedPrefix + Tr("file_name_product") + extension,
+		strtab.NewTableFromMap(mapItemsMap(endPt.ProdValEvolution("main"))).Transpose(), prodEvolRender}.Show()
 }
 
 func draftFileName(num int, name string) string {
@@ -448,7 +441,7 @@ func ParseFilename(s string) (f Filename, err error) {
 
 	//Stock
 	//f.Stock = args[3]
-	f.Stock = "bievre" //To refactor
+	f.Stock = "main" //To refactor
 
 	//Id
 	f.Id = strings.TrimPrefix(args[3], numberPrefix)
