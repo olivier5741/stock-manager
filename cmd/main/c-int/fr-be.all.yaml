@@ -3,7 +3,9 @@
 - id: csv_header_item_product
   translation: Prod
 - id: csv_header_item_value
-  translation: Val
+  translation: Val {{.Count}}
+- id: csv_header_item_unit
+  translation: Unit {{.Count}}
 - id: csv_header_order_unit
   translation: Unité Commande
 - id: csv_header_stock_min
@@ -39,7 +41,7 @@
 - id: file_name_stock
   translation: stock
 - id: file_name_stock_in
-  translation: entrée
+  translation: entree
 - id: file_name_stock_out
   translation: sortie
 - id: file_name_to_order

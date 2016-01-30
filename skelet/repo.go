@@ -44,7 +44,6 @@ func (r DumEvtRepo) Get(id string) (Ider, error) {
 		// TODO : something more intelligent than this :)
 		acts = append(acts, e.(Event).Act)
 	}
-
 	return r.PlayEvt(acts, id), nil
 }
 

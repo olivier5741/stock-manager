@@ -174,7 +174,10 @@ func (t T) GetContentWithHeaders(ok bool) [][]string {
 		colHead = append(colHead, "")
 	}
 	colHead = append(colHead, t.colHeader...)
-	out = append(out, colHead)
+	// should put a 'if'
+	if len(t.content) > 0 {
+		out = append(out, colHead[:len(t.content[0])+1])
+	}
 	inter := prepend(t.content, t.rowHeader)
 
 	for _, it := range inter {
