@@ -1,9 +1,5 @@
 package skelet
 
-import (
-	"log"
-)
-
 type EvtPlay func(acts []interface{}, id string) Ider
 type Init func(id string) Ider
 
@@ -48,9 +44,6 @@ func (r DumEvtRepo) Get(id string) (Ider, error) {
 		// TODO : something more intelligent than this :)
 		acts = append(acts, e.(Event).Act)
 	}
-
-	log.Println("Stock")
-	log.Println(id)
 	return r.PlayEvt(acts, id), nil
 }
 

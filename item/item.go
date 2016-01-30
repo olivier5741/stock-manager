@@ -1,7 +1,6 @@
 package item
 
 import (
-	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -88,7 +87,6 @@ type UnitVal struct {
 func NewUnit(s string) Unit {
 	s = strings.TrimSuffix(s, ")")
 	ss := strings.Split(s, "(")
-	log.Println(ss)
 	u := Unit{"unknown", 0}
 	if len(ss) > 0 {
 		u.Name = ss[0]
@@ -173,9 +171,6 @@ func AddVal(v1, v2 Val) (out Val) {
 }
 
 func SubVal(v1, v2 Val) (out Val) {
-	log.Println("SUB")
-	log.Println(v1)
-	log.Println(v2)
 
 	out = CopyVal(v1)
 
