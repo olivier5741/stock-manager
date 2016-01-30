@@ -36,8 +36,8 @@ ${WIN_EXE_PATH} : ${REL_DIR}
 
 run-app : ${EXE_PATH} ${REL_DIR} ${TRANS_DIR}
 	cp cmd/main/2016-01-29-n1-sortie.csv ${REL_DIR} && \
-	cp cmd/main/2016-01-28-n2-entrée.csv ${REL_DIR} && \
-	cp cmd/main/2016-01-28-n1-entrée.csv ${REL_DIR} && \
+	cp cmd/main/2016-01-28-n2-entree.csv ${REL_DIR} && \
+	cp cmd/main/2016-01-28-n1-entree.csv ${REL_DIR} && \
 	cp ${TRANS_PATH} release/c-int && \
 	cd ${REL_DIR} && \
 	./${EXE} && \

@@ -41,7 +41,7 @@
 - id: file_name_stock
   translation: stock
 - id: file_name_stock_in
-  translation: entrée
+  translation: entree
 - id: file_name_stock_out
   translation: sortie
 - id: file_name_to_order
