@@ -33,9 +33,10 @@ var (
 
 	extension       = ".csv"
 	configPrefix    = "c" + sep
+	exePrefix       = "e" + sep
 	generatedPrefix = "g" + sep
 	loggingPrefix   = "l" + sep
-	numberPrefix    = "n°"
+	numberPrefix    = "n"
 
 	repo  = stock.MakeDummyStockRepository()
 	endPt = stock.EndPt{Db: repo}
@@ -99,7 +100,7 @@ func mapItem(v Item, unitNb int) []string {
 	s := make([]string, unitNb*2+1)
 	s[0] = v.Prod.String()
 	count := 1
-	for _, u := range v.Val.Vals {
+	for _, u := range v.Val.ValsWithByFactorDesc() {
 		if count == unitNb*2+1 {
 			break
 		}
@@ -199,7 +200,7 @@ func main() {
 	defer f.Close()
 
 	log.SetOutput(f)
-	//log.SetFormatter(&log.JSONFormatter{})
+	log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(log.ErrorLevel)
 
 	files, err3 := ioutil.ReadDir("./")
@@ -258,9 +259,11 @@ func RouteFile(files []os.FileInfo) {
 	for _, file := range files {
 		// TO REFACTOR
 
-		if strings.HasPrefix(file.Name(), configPrefix) ||
-			strings.HasPrefix(file.Name(), generatedPrefix) ||
-			strings.HasPrefix(file.Name(), loggingPrefix) ||
+		if !strings.HasSuffix(file.Name(), ".csv") {
+			continue
+		}
+
+		if strings.HasPrefix(file.Name(), generatedPrefix) ||
 			strings.HasPrefix(file.Name(), Tr("file_prefix_draft")) {
 			continue
 		}

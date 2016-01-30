@@ -182,7 +182,7 @@ func SubVal(v1, v2 Val) (out Val) {
 	out = CopyVal(v1)
 	out = stupidSubVal(out, v2.valsWithout())
 
-	for _, v := range v2.valsWithByFactorAsc() {
+	for _, v := range v2.ValsWithByFactorAsc() {
 		if old, ok := out.Vals[v.Id()]; !ok {
 			out.Vals[v.Id()] = UnitVal{v.Unit, -v.Val}
 		} else {
@@ -190,7 +190,7 @@ func SubVal(v1, v2 Val) (out Val) {
 				out.Vals[v.Id()] = SubUnitVal(old, v)
 				continue
 			}
-			current := out.valsWithByFactorAsc()
+			current := out.ValsWithByFactorAsc()
 			needed := valsUntilAboveLimit(current, v.Total())
 			sort.Sort(ByFactorDesc(needed))
 			missing := v.Total()
@@ -234,7 +234,7 @@ func (v Val) Redistribute() Val {
 	out := v.valsWithout()
 	lasts := make([]UnitVal, 0)
 	left := 0
-	for _, val := range v.valsWithByFactorDesc() {
+	for _, val := range v.ValsWithByFactorDesc() {
 		out[val.Id()] = NewUnitValInit(val)
 		lasts = append(lasts, NewUnitValInit(val))
 		left += val.Total()
@@ -248,7 +248,7 @@ func (v Val) Redistribute() Val {
 
 func (v Val) Total() (out Val) {
 	out = Val{v.valsWithout()}
-	with := v.valsWithByFactorDesc()
+	with := v.ValsWithByFactorDesc()
 	total := 0
 	for _, val := range with {
 		total += val.Total()
@@ -290,11 +290,11 @@ func (v Val) valsWith() (out map[string]UnitVal) {
 	return
 }
 
-func (v Val) valsWithByFactorAsc() []UnitVal {
+func (v Val) ValsWithByFactorAsc() []UnitVal {
 	return Val{Vals: v.valsWith()}.ValsByFactorAsc()
 }
 
-func (v Val) valsWithByFactorDesc() []UnitVal {
+func (v Val) ValsWithByFactorDesc() []UnitVal {
 	return Val{Vals: v.valsWith()}.ValsByFactorDesc()
 }
 
