@@ -60,9 +60,9 @@ func (its Items) Empty() (out Items) {
 }
 
 // I don't think I'm using this function
-func (origs Items) Copy() (out Items) {
-	out = make(Items, len(origs))
-	for key, orig := range origs {
+func (its Items) Copy() (out Items) {
+	out = make(Items, len(its))
+	for key, orig := range its {
 		out[key] = orig
 	}
 	return
@@ -201,7 +201,7 @@ func SubVal(v1, v2 Val) (out Val) {
 				if left < missing {
 					tosub = (missing - left) / n.Fact
 					if tosub*n.Fact != missing-left {
-						tosub += 1
+						tosub++
 					}
 				}
 
@@ -227,7 +227,7 @@ func Diff(v1, v2 Val) (out Val, noWithout bool, diff int) {
 
 func (v Val) Redistribute() Val {
 	out := v.valsWithout()
-	lasts := make([]UnitVal, 0)
+	var lasts []UnitVal
 	left := 0
 	for _, val := range v.ValsWithByFactorDesc() {
 		out[val.Id()] = NewUnitValInit(val)
@@ -306,7 +306,7 @@ func stupidSubVal(v1 Val, vals map[string]UnitVal) (val Val) {
 }
 
 func valsUntilAboveLimit(vals []UnitVal, limit int) []UnitVal {
-	out := make([]UnitVal, 0)
+	var out []UnitVal
 	for _, v := range vals {
 		out = append(out, v)
 		if valsTotal(out) >= limit {
@@ -345,7 +345,7 @@ func (v Val) ValuesFactFilter() (with map[string]UnitVal, without map[string]Uni
 }
 
 func (v Val) Values() []UnitVal {
-	list := make([]UnitVal, 0)
+	var list []UnitVal
 	for _, val := range v.Vals {
 		list = append(list, val)
 	}
@@ -401,7 +401,7 @@ func (f ByFactorAsc) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
 func (f ByFactorAsc) Less(i, j int) bool { return f[i].Fact < f[j].Fact }
 
 func mapToSlice(m map[string]UnitVal) []UnitVal {
-	out := make([]UnitVal, 0)
+	var out []UnitVal
 	for _, v := range m {
 		out = append(out, v)
 	}

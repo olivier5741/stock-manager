@@ -1,20 +1,20 @@
 package stock
 
 import (
-	. "github.com/olivier5741/stock-manager/skelet"
+	sk "github.com/olivier5741/stock-manager/skelet"
 )
 
 var (
-	Chain = []func(cmd Cmd) Cmd{
-		Route, Error,
-		Get, Error,
-		Act, Error,
-		Put, Error,
-		Publish, Error,
+	Chain = []func(cmd sk.Cmd) sk.Cmd{
+		sk.Route, sk.Error,
+		sk.Get, sk.Error,
+		sk.Act, sk.Error,
+		sk.Put, sk.Error,
+		sk.Publish, sk.Error,
 	}
 	// On peut même rajouter un ESB :) ou n'importe quoi !!
 )
 
 type EndPt struct {
-	Db EvtSrcPersister
+	Db sk.EvtSrcPersister
 }

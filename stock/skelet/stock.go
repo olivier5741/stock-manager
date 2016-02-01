@@ -19,15 +19,15 @@ type ItemsCmd struct {
 }
 
 // code duplication !! Initialization is different when type is composed
-func (i InCmd) Id() string {
+func (i InCmd) ID() string {
 	return i.StockName
 }
 
-func (i OutCmd) Id() string {
+func (i OutCmd) ID() string {
 	return i.StockName
 }
 
-func (i InventoryCmd) Id() string {
+func (i InventoryCmd) ID() string {
 	return i.StockName
 }
 

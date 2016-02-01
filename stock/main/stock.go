@@ -44,7 +44,7 @@ type ItemsAction struct {
 	Items
 }
 
-func (s Stock) Id() string {
+func (s Stock) ID() string {
 	return s.Name
 }
 

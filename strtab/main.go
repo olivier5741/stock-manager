@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	rowSizeErr = fmt.Errorf("The size of the row doesn't match the size of content row")
-	colSizeErr = fmt.Errorf("The size of the col doesn't match the size of content col")
+	errRowSize = fmt.Errorf("The size of the row doesn't match the size of content row")
+	errColSize = fmt.Errorf("The size of the col doesn't match the size of content col")
 )
 
 type T struct {
@@ -78,7 +78,7 @@ func (t *T) AddColHeader(c []string) error {
 	if len(t.content) != 0 && len(t.content) != len(c) {
 
 		fmt.Println(len(t.content))
-		return rowSizeErr
+		return errRowSize
 	}
 	h := make([]string, len(c))
 	copy(h, c)
@@ -87,8 +87,8 @@ func (t *T) AddColHeader(c []string) error {
 }
 
 func NewTableFromMap(vs map[string]map[string]string) *T {
-	h := make(map[string]int, 0)
-	c := make([][]string, 0)
+	h := make(map[string]int,0)
+	var c [][]string
 	n := 0
 	for i, r := range vs {
 		newRow := make([]string, n+1)
@@ -117,11 +117,11 @@ func NewTableFromMap(vs map[string]map[string]string) *T {
 }
 
 func (t *T) AddWithHeader(vs ...[]string) error {
-	h := make([]string, 0)
+	var h []string
 	c := make([][]string, len(vs))
 	for i, v := range vs {
 		if len(t.content) != 0 && len(t.content[0]) != len(v)-1 {
-			return rowSizeErr
+			return errRowSize
 		}
 		h = append(h, v[0])
 		c[i] = v[1:]
@@ -137,7 +137,7 @@ func (t *T) AddWithHeader(vs ...[]string) error {
 }
 
 func (t T) GetContent() [][]string {
-	out := make([][]string, 0)
+	var out [][]string
 	for _, r := range t.content {
 		newRow := make([]string, len(r))
 		copy(newRow, r)
@@ -147,7 +147,7 @@ func (t T) GetContent() [][]string {
 }
 
 func (t T) GetContentWithColHeader() [][]string {
-	out := make([][]string, 0)
+	var out [][]string
 	out = append(out, t.colHeader)
 	for _, c := range t.GetContent() {
 		out = append(out, c)
@@ -156,7 +156,7 @@ func (t T) GetContentWithColHeader() [][]string {
 }
 
 func prepend(base [][]string, add []string) [][]string {
-	out := make([][]string, 0)
+	var out [][]string
 	for i, l := range base {
 		out = append(out, append([]string{add[i]}, l...))
 	}
@@ -168,8 +168,8 @@ func (t T) GetContentWithRowHeader() [][]string {
 }
 
 func (t T) GetContentWithHeaders(ok bool) [][]string {
-	out := make([][]string, 0)
-	colHead := make([]string, 0)
+	var out [][]string
+	var colHead []string
 	if ok {
 		colHead = append(colHead, "")
 	}

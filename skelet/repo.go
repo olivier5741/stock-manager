@@ -15,7 +15,7 @@ func MakeDumEvtRepo(i Init, e EvtPlay) *DumEvtRepo {
 }
 
 func (r DumEvtRepo) GetAll() (aggs []Ider, err error) {
-	for key, _ := range r.db {
+	for key := range r.db {
 		out, err := r.Get(key)
 		if err != nil {
 			return nil, err
@@ -39,7 +39,7 @@ func (r DumEvtRepo) Get(id string) (Ider, error) {
 		return r.InitAgg(id), nil
 	}
 
-	acts := make([]interface{}, 0)
+	var acts []interface{}
 	for _, e := range events {
 		// TODO : something more intelligent than this :)
 		acts = append(acts, e.(Event).Act)

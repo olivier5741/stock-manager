@@ -13,7 +13,7 @@ type EvtSrcPersister interface {
 }
 
 type Ider interface {
-	Id() string
+	ID() string
 }
 
 type Event struct {
@@ -51,7 +51,7 @@ func Error(cmd Cmd) Cmd {
 }
 
 func Get(cmd Cmd) Cmd {
-	cmd.Agg, cmd.Err = cmd.Persist.Get(cmd.T.Id())
+	cmd.Agg, cmd.Err = cmd.Persist.Get(cmd.T.ID())
 	//log.Debug(cmd.Agg)
 	return cmd
 }
@@ -63,7 +63,7 @@ func Act(cmd Cmd) Cmd {
 }
 
 func Put(cmd Cmd) Cmd {
-	cmd.Err = cmd.Persist.Put(cmd.Agg.Id(), cmd.Event)
+	cmd.Err = cmd.Persist.Put(cmd.Agg.ID(), cmd.Event)
 	//log.Debug(cmd.Agg)
 	return cmd
 }

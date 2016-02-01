@@ -3,21 +3,23 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 	// considering using this one instead : i18n4go, tools better but not inside
-	"github.com/nicksnyder/go-i18n/i18n"
-	"github.com/olivier5741/stock-manager/cmd/stock"
-	. "github.com/olivier5741/stock-manager/item"
-	"github.com/olivier5741/stock-manager/skelet"
-	stockBL "github.com/olivier5741/stock-manager/stock/main"
-	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
-	"github.com/olivier5741/stock-manager/strtab"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/nicksnyder/go-i18n/i18n"
+	"github.com/olivier5741/stock-manager/cmd/stock"
+	"github.com/olivier5741/stock-manager/item"
+	"github.com/olivier5741/stock-manager/skelet"
+	stockBL "github.com/olivier5741/stock-manager/stock/main"
+	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
+	"github.com/olivier5741/stock-manager/strtab"
 )
 
 // ATTENTION : tout méthode qui modifie le struct doit accepter un pointer !! ??
@@ -55,8 +57,8 @@ var (
 	}
 )
 
-func itemArrayToMap(items []Item) (out Items) {
-	out = Items{}
+func itemArrayToMap(items []item.Item) (out item.Items) {
+	out = item.Items{}
 	for _, item := range items {
 		out[string(item.Prod)] = item
 	}
@@ -96,7 +98,7 @@ func csvToStruct(filename string, h []string, mapper func(s []string, c interfac
 	}
 }
 
-func mapItem(v Item, unitNb int) []string {
+func mapItem(v item.Item, unitNb int) []string {
 	s := make([]string, unitNb*2+1)
 	s[0] = v.Prod.String()
 	count := 1
@@ -111,7 +113,7 @@ func mapItem(v Item, unitNb int) []string {
 	return s
 }
 
-func maxUnit(its Items) (max int) {
+func maxUnit(its item.Items) (max int) {
 	for _, it := range its {
 		if len(it.Val.Vals) > max {
 			max = len(it.Val.Vals)
@@ -120,8 +122,8 @@ func maxUnit(its Items) (max int) {
 	return
 }
 
-func mapItems(its Items) [][]string {
-	out := make([][]string, 0)
+func mapItems(its item.Items) [][]string {
+	var out [][]string
 	max := maxUnit(its)
 	for _, it := range its {
 		out = append(out, mapItem(it, max))
@@ -129,7 +131,7 @@ func mapItems(its Items) [][]string {
 	return out
 }
 
-func mapItemsMap(its map[string]Items) map[string]map[string]string {
+func mapItemsMap(its map[string]item.Items) map[string]map[string]string {
 	out := make(map[string]map[string]string, 0)
 	for date, it := range its {
 		newRow := make(map[string]string)
@@ -210,6 +212,9 @@ func main() {
 			"err": err3,
 		}).Error(Tr("error_dir_read"))
 	}
+
+	// DRIVE DOWNLOAD
+	//getFiles()
 
 	RouteFile(files)
 
@@ -295,16 +300,16 @@ func RouteFile(files []os.FileInfo) {
 func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
 	mapper := func(ins []string, c interface{}) {
-		c.(*Item).Prod = Prod(ins[0])
-		units := make([]UnitVal, 0)
+		c.(*item.Item).Prod = item.Prod(ins[0])
+		var units []item.UnitVal
 		for i := 1; i < len(ins)-1; i = i + 2 {
 			val, _ := strconv.Atoi(ins[i])
 			log.Debug("Val")
 			log.Debug(val)
-			units = append(units, UnitVal{NewUnit(ins[i+1]), val})
+			units = append(units, item.UnitVal{item.NewUnit(ins[i+1]), val})
 			log.Debug(units)
 		}
-		c.(*Item).Val = NewVal(units...)
+		c.(*item.Item).Val = item.NewVal(units...)
 	}
 
 	// should put this in a local type
@@ -320,10 +325,10 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		Tr("csv_header_item_unit", 4),
 	}
 
-	its := make([]Item, 0)
-	newLiner := func() interface{} { return new(Item) }
+	var its []item.Item
+	newLiner := func() interface{} { return new(item.Item) }
 	appender := func(v interface{}) {
-		a := v.(*Item)
+		a := v.(*item.Item)
 		its = append(its, *a)
 	}
 

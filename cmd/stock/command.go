@@ -1,51 +1,50 @@
 package stock
 
 import (
-	. "github.com/olivier5741/stock-manager/item"
-	. "github.com/olivier5741/stock-manager/skelet"
-	. "github.com/olivier5741/stock-manager/stock/main"
-	. "github.com/olivier5741/stock-manager/stock/skelet"
+	sk "github.com/olivier5741/stock-manager/skelet"
+	stockM "github.com/olivier5741/stock-manager/stock/main"
+	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
 	"time"
 )
 
-func (endPt *EndPt) HandleIn(agg interface{}, cmd interface{}) (event Event, extEvent interface{}, err error) {
-	stock := agg.(*Stock)
-	cmdIn := cmd.(InCmd)
+func (endPt *EndPt) HandleIn(agg interface{}, cmd interface{}) (event sk.Event, extEvent interface{}, err error) {
+	stock := agg.(*stockM.Stock)
+	cmdIn := cmd.(stockSk.InCmd)
 
 	in, err := stock.SubmitIn(cmdIn)
 	if err != nil {
-		return Event{}, nil, err
+		return sk.Event{}, nil, err
 	}
 
-	return Event{cmdIn.Date, in}, InSubmitted{
-		StockEvent{stock.Name, time.Now()},
+	return sk.Event{cmdIn.Date, in}, stockSk.InSubmitted{
+		stockSk.StockEvent{stock.Name, time.Now()},
 		in.Items, stock.Items}, nil
 }
 
-func (endPt *EndPt) HandleOut(agg interface{}, cmd interface{}) (event Event, extEvent interface{}, err error) {
-	stock := agg.(*Stock)
-	cmdOut := cmd.(OutCmd)
+func (endPt *EndPt) HandleOut(agg interface{}, cmd interface{}) (event sk.Event, extEvent interface{}, err error) {
+	stock := agg.(*stockM.Stock)
+	cmdOut := cmd.(stockSk.OutCmd)
 
 	out, err := stock.SubmitOut(cmdOut)
 	if err != nil {
-		return Event{}, nil, err
+		return sk.Event{}, nil, err
 	}
 
-	return Event{cmdOut.Date, out}, OutSubmitted{
-		StockEvent{stock.Name, time.Now()},
+	return sk.Event{cmdOut.Date, out}, stockSk.OutSubmitted{
+		stockSk.StockEvent{stock.Name, time.Now()},
 		out.Items, stock.Items}, nil
 }
 
-func (endPt *EndPt) HandleInventory(agg interface{}, cmd interface{}) (event Event, extEvent interface{}, err error) {
-	stock := agg.(*Stock)
-	cmdInv := cmd.(InventoryCmd)
+func (endPt *EndPt) HandleInventory(agg interface{}, cmd interface{}) (event sk.Event, extEvent interface{}, err error) {
+	stock := agg.(*stockM.Stock)
+	cmdInv := cmd.(stockSk.InventoryCmd)
 
 	inv, err := stock.SubmitInventory(cmdInv)
 	if err != nil {
-		return Event{}, nil, err
+		return sk.Event{}, nil, err
 	}
 
-	return Event{cmdInv.Date, inv}, InventorySubmitted{
-		StockEvent{stock.Name, time.Now()},
+	return sk.Event{cmdInv.Date, inv}, stockSk.InventorySubmitted{
+		stockSk.StockEvent{stock.Name, time.Now()},
 		inv.Items, stock.Items}, nil
 }
