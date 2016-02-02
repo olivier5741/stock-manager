@@ -14,7 +14,7 @@ var (
 	Carton   = unitval.Unit{"cart.", 450}
 )
 
-func ValEqualCheck(t *testing.T, gots, exps val.Val) {
+func ValEqualCheck(t *testing.T, gots, exps val.T) {
 
 	for key, got := range gots.Vals {
 		if exp, ok := exps.Vals[key]; !ok {

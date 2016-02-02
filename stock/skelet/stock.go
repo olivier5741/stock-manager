@@ -14,7 +14,7 @@ type RenameCmd struct {
 
 type ItemsCmd struct {
 	StockName string
-	Items
+	T
 	Date string
 }
 
@@ -33,17 +33,17 @@ func (i InventoryCmd) ID() string {
 
 type InSubmitted struct {
 	StockEvent
-	In, Stock Items
+	In, Stock T
 }
 
 type OutSubmitted struct {
 	StockEvent
-	Out, Stock Items
+	Out, Stock T
 }
 
 type InventorySubmitted struct {
 	StockEvent
-	Inventory, Stock Items
+	Inventory, Stock T
 }
 
 type StockEvent struct {

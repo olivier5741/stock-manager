@@ -8,11 +8,11 @@ import (
 
 type Stock struct {
 	Name string
-	items.Items
+	items.T
 }
 
 func MakeStock(name string) Ider {
-	return &Stock{name, items.Items{}}
+	return &Stock{name, items.T{}}
 }
 
 func FromActions(acts []interface{}, id string) Ider {
@@ -20,11 +20,11 @@ func FromActions(acts []interface{}, id string) Ider {
 	for _, act := range acts {
 		switch act := act.(type) {
 		case In:
-			stock.Items = items.Add(stock.Items, act.Items)
+			stock.T = items.Add(stock.T, act.T)
 		case Out:
-			stock.Items = items.Sub(stock.Items, act.Items)
+			stock.T = items.Sub(stock.T, act.T)
 		case Inventory:
-			stock.Items = act.Items.Copy()
+			stock.T = act.T.Copy()
 		case Rename:
 			stock.Name = act.Name
 		}
@@ -41,7 +41,7 @@ type Out ItemsAction
 type Inventory ItemsAction
 
 type ItemsAction struct {
-	items.Items
+	items.T
 }
 
 func (s Stock) ID() string {
@@ -49,20 +49,20 @@ func (s Stock) ID() string {
 }
 
 func (s *Stock) SubmitIn(i InCmd) (e In, err error) {
-	s.Items = items.Add(s.Items, i.Items)
-	e = In{i.Items}
+	s.T = items.Add(s.T, i.T)
+	e = In{i.T}
 	return
 }
 
 func (s *Stock) SubmitOut(o OutCmd) (e Out, err error) {
-	s.Items = items.Sub(s.Items, o.Items)
-	e = Out{o.Items}
+	s.T = items.Sub(s.T, o.T)
+	e = Out{o.T}
 	return
 }
 
 func (s *Stock) SubmitInventory(i InventoryCmd) (e Inventory, err error) {
-	s.Items = i.Items
-	e = Inventory{i.Items}
+	s.T = i.T
+	e = Inventory{i.T}
 	return
 }
 

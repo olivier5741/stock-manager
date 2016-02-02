@@ -6,22 +6,22 @@ import (
 	stockM "github.com/olivier5741/stock-manager/stock/main"
 )
 
-func (endPt EndPt) ProdValEvolution(id string) (data map[string]items.Items) {
+func (endPt EndPt) ProdValEvolution(id string) (data map[string]items.T) {
 	// TODO : should be generated when even arrives
 	acts := endPt.Db.GetAllEvents(id)
-	data = make(map[string]items.Items, len(acts))
-	state := make(items.Items, 0)
+	data = make(map[string]items.T, len(acts))
+	state := make(items.T, 0)
 
 	i := 0
 loop:
 	for _, a := range acts {
 		switch act := a.(sk.Event).Act.(type) {
 		case stockM.In:
-			state = items.Add(state, act.Items)
+			state = items.Add(state, act.T)
 		case stockM.Out:
-			state = items.Sub(state, act.Items)
+			state = items.Sub(state, act.T)
 		case stockM.Inventory:
-			state = act.Items.Copy()
+			state = act.T.Copy()
 		default:
 			continue loop
 		}

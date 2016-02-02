@@ -5,42 +5,42 @@ import (
 	"sort"
 )
 
-type Val struct {
+type T struct {
 	Vals map[string]unitval.T
 }
 
-func (v Val) String() (s string) {
-	for _, u := range v.ValsByFactorDesc() {
+func (v T) String() (s string) {
+	for _, u := range v.ValsByFactDesc() {
 		s += u.String() + ", "
 	}
 	return
 }
 
-func NewVal(units ...unitval.T) Val {
+func NewT(units ...unitval.T) T {
 	vals := make(map[string]unitval.T, 0)
 	for _, u := range units {
 		vals[u.ID()] = u
 	}
-	return Val{vals}
+	return T{vals}
 }
 
-func (v Val) Empty() (out Val) {
+func (v T) Empty() (out T) {
 	vals := make(map[string]unitval.T, 0)
 	for k, u := range v.Vals {
 		vals[k] = u.NewSet(0)
 	}
-	return Val{vals}
+	return T{vals}
 }
 
-func (v Val) Neg() Val {
+func (v T) Neg() T {
 	vals := make(map[string]unitval.T, 0)
 	for _, val := range v.Values() {
 		vals[val.ID()] = val.NewSet(-val.Val)
 	}
-	return Val{vals}
+	return T{vals}
 }
 
-func Add(v1, v2 Val) (out Val) {
+func Add(v1, v2 T) (out T) {
 
 	out = v1.Copy()
 
@@ -53,12 +53,12 @@ func Add(v1, v2 Val) (out Val) {
 	return
 }
 
-func Sub(v1, v2 Val) (out Val) {
+func Sub(v1, v2 T) (out T) {
 
 	out = v1.Copy()
-	out = stupidSubVal(out, v2.valsWithout())
+	out = valByValSub(out, v2.valsWithout())
 
-	for _, v := range v2.ValsWithByFactorAsc() {
+	for _, v := range v2.ValsWithByFactAsc() {
 		if old, ok := out.Vals[v.ID()]; !ok {
 			out.Vals[v.ID()] = unitval.T{v.Unit, -v.Val}
 		} else {
@@ -66,12 +66,12 @@ func Sub(v1, v2 Val) (out Val) {
 				out.Vals[v.ID()] = unitval.Sub(old, v)
 				continue
 			}
-			current := out.ValsWithByFactorAsc()
-			needed := valsUntilAboveLimit(current, v.Total())
+			current := out.ValsWithByFactAsc()
+			needed := unitval.SliceFromSliceTotalUntilLimit(current, v.Total())
 			sort.Sort(unitval.ByFactDesc(needed))
 			missing := v.Total()
 			for i, n := range needed {
-				left := valsTotal(needed[i+1:])
+				left := unitval.SliceTotal(needed[i+1:])
 
 				if left == missing {
 					continue
@@ -90,7 +90,7 @@ func Sub(v1, v2 Val) (out Val) {
 				missing -= tosub * n.Fact
 			}
 			if missing > 0 {
-				stupidSubVal(out, map[string]unitval.T{v.ID(): {v.Unit, missing}})
+				valByValSub(out, map[string]unitval.T{v.ID(): {v.Unit, missing}})
 			}
 
 		}
@@ -100,18 +100,18 @@ func Sub(v1, v2 Val) (out Val) {
 }
 
 // Perhaps delete noWithout
-func Diff(v1, v2 Val) (out Val, noWithout bool, diff int) {
+func Diff(v1, v2 T) (out T, noWithout bool, diff int) {
 	out = Sub(v1, v2).Redistribute()
 	noWithout = len(out.valsWithout()) == 0
 	diff = out.TotalWith()
 	return
 }
 
-func (v Val) Redistribute() Val {
+func (v T) Redistribute() T {
 	out := v.valsWithout()
 	var lasts []unitval.T
 	left := 0
-	for _, val := range v.ValsWithByFactorDesc() {
+	for _, val := range v.ValsWithByFactDesc() {
 		out[val.ID()] = val.Empty()
 		lasts = append(lasts, val.Empty())
 		left += val.Total()
@@ -120,12 +120,12 @@ func (v Val) Redistribute() Val {
 			left = left % l.Fact
 		}
 	}
-	return Val{out}
+	return T{out}
 }
 
-func (v Val) Total() (out Val) {
-	out = Val{v.valsWithout()}
-	with := v.ValsWithByFactorDesc()
+func (v T) Total() (out T) {
+	out = T{v.valsWithout()}
+	with := v.ValsWithByFactDesc()
 	total := 0
 	for _, val := range with {
 		total += val.Total()
@@ -138,7 +138,7 @@ func (v Val) Total() (out Val) {
 	return
 }
 
-func (v Val) TotalWithRound(u unitval.Unit) (out unitval.TFloat) {
+func (v T) TotalWithRound(u unitval.Unit) (out unitval.TFloat) {
 	total := 0.0
 	for _, val := range v.valsWith() {
 		total += float64(val.Total()) / float64(u.Fact)
@@ -146,36 +146,36 @@ func (v Val) TotalWithRound(u unitval.Unit) (out unitval.TFloat) {
 	return unitval.TFloat{u, total}
 }
 
-func (v Val) TotalWith() (total int) {
+func (v T) TotalWith() (total int) {
 	for _, val := range v.valsWith() {
 		total += val.Total()
 	}
 	return
 }
 
-func (v Val) Copy() Val {
-	return NewVal(v.Values()...)
+func (v T) Copy() T {
+	return NewT(v.Values()...)
 }
 
-func (v Val) valsWithout() (out map[string]unitval.T) {
-	_, out = v.ValuesFactFilter()
+func (v T) valsWithout() (out map[string]unitval.T) {
+	_, out = v.ValsFactFilter()
 	return
 }
 
-func (v Val) valsWith() (out map[string]unitval.T) {
-	out, _ = v.ValuesFactFilter()
+func (v T) valsWith() (out map[string]unitval.T) {
+	out, _ = v.ValsFactFilter()
 	return
 }
 
-func (v Val) ValsWithByFactorAsc() []unitval.T {
-	return Val{Vals: v.valsWith()}.ValsByFactorAsc()
+func (v T) ValsWithByFactAsc() []unitval.T {
+	return T{Vals: v.valsWith()}.ValsByFactAsc()
 }
 
-func (v Val) ValsWithByFactorDesc() []unitval.T {
-	return Val{Vals: v.valsWith()}.ValsByFactorDesc()
+func (v T) ValsWithByFactDesc() []unitval.T {
+	return T{Vals: v.valsWith()}.ValsByFactDesc()
 }
 
-func stupidSubVal(v1 Val, vals map[string]unitval.T) (val Val) {
+func valByValSub(v1 T, vals map[string]unitval.T) (val T) {
 	val = v1.Copy()
 	for _, v := range vals {
 		if old, ok := val.Vals[v.ID()]; ok {
@@ -187,33 +187,7 @@ func stupidSubVal(v1 Val, vals map[string]unitval.T) (val Val) {
 	return
 }
 
-func valsUntilAboveLimit(vals []unitval.T, limit int) []unitval.T {
-	var out []unitval.T
-	for _, v := range vals {
-		out = append(out, v)
-		if valsTotal(out) >= limit {
-			return out
-		}
-	}
-	return out
-}
-
-func valsTotal(vals []unitval.T) (total int) {
-	for _, v := range vals {
-		total += v.Total()
-	}
-	return
-}
-
-func copyMap(originalMap map[string]unitval.T) map[string]unitval.T {
-	newMap := make(map[string]unitval.T, 0)
-	for k, v := range originalMap {
-		newMap[k] = v
-	}
-	return newMap
-}
-
-func (v Val) ValuesFactFilter() (with map[string]unitval.T, without map[string]unitval.T) {
+func (v T) ValsFactFilter() (with map[string]unitval.T, without map[string]unitval.T) {
 	with = make(map[string]unitval.T, 0)
 	without = make(map[string]unitval.T, 0)
 	for _, val := range v.Vals {
@@ -226,7 +200,7 @@ func (v Val) ValuesFactFilter() (with map[string]unitval.T, without map[string]u
 	return
 }
 
-func (v Val) Values() []unitval.T {
+func (v T) Values() []unitval.T {
 	var list []unitval.T
 	for _, val := range v.Vals {
 		list = append(list, val)
@@ -234,13 +208,13 @@ func (v Val) Values() []unitval.T {
 	return list
 }
 
-func (v Val) ValsByFactorDesc() []unitval.T {
+func (v T) ValsByFactDesc() []unitval.T {
 	out := v.Values()
 	sort.Sort(unitval.ByFactDesc(out))
 	return out
 }
 
-func (v Val) ValsByFactorAsc() []unitval.T {
+func (v T) ValsByFactAsc() []unitval.T {
 	out := v.Values()
 	sort.Sort(unitval.ByFactAsc(out))
 	return out

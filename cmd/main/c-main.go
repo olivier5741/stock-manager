@@ -16,8 +16,8 @@ import (
 	"github.com/nicksnyder/go-i18n/i18n"
 	"github.com/olivier5741/stock-manager/cmd/stock"
 	"github.com/olivier5741/stock-manager/item/items"
-	"github.com/olivier5741/stock-manager/item/val"
 	"github.com/olivier5741/stock-manager/item/unitval"
+	"github.com/olivier5741/stock-manager/item/val"
 	"github.com/olivier5741/stock-manager/skelet"
 	stockBL "github.com/olivier5741/stock-manager/stock/main"
 	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
@@ -111,7 +111,7 @@ func (t TableView) Show() {
 			"path":     t.Path,
 			"filename": t.Title,
 			"err":      err,
-		}).Error("create_file_error") //Error creating the csv file
+		}).Error("create_file_error")
 		return
 	}
 
@@ -126,7 +126,7 @@ func (t TableView) Show() {
 			"filename": t.Title,
 			"view":     t.Table,
 			"err":      w.Error(),
-		}).Error(Tr("error_file_csv_view_to")) //Error writing the view to a csv file
+		}).Error(Tr("error_file_csv_view_to"))
 	}
 }
 
@@ -168,7 +168,7 @@ func main() {
 	RouteFile(files)
 
 	stockInt, err4 := endPt.Db.Get("main")
-	iStock := stockInt.(*stockBL.Stock).Items
+	iStock := stockInt.(*stockBL.Stock).T
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
@@ -181,28 +181,39 @@ func main() {
 		Tr("csv_header_item_value", 3), Tr("csv_header_item_unit", 3),
 		Tr("csv_header_item_value", 4), Tr("csv_header_item_unit", 4),
 	}
-	prodValRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(false) }
-	prodEvolRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(true) }
+	prodValRender := func(tab *strtab.T) [][]string {
+		return tab.GetContentWithHeaders(false)
+	}
+	prodEvolRender := func(tab *strtab.T) [][]string {
+		return tab.GetContentWithHeaders(true)
+	}
 
 	TableView{"main", generatedPrefix + Tr("file_name_stock") + extension,
-		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(), prodValRender}.Show()
+		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(),
+		prodValRender}.Show()
 
 	TableView{"main", draftFileName(3, Tr("file_name_inventory")),
-		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(), prodValRender}.Show()
+		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(),
+		prodValRender}.Show()
 
 	TableView{"main", draftFileName(1, Tr("file_name_stock_in")),
-		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(), prodValRender}.Show()
+		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(),
+		prodValRender}.Show()
 
 	TableView{"main", draftFileName(2, Tr("file_name_stock_out")),
-		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(), prodValRender}.Show()
+		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(),
+		prodValRender}.Show()
 
 	TableView{"main", generatedPrefix + Tr("file_name_product") + extension,
-		strtab.NewTfromMap(items.MapItemsMap(endPt.ProdValEvolution("main"))).Sort().Transpose().Sort(), prodEvolRender}.Show()
+		strtab.NewTfromMap(items.ItemsMapToStringMapTable(
+			endPt.ProdValEvolution("main"))).Sort().Transpose().Sort(),
+		prodEvolRender}.Show()
 }
 
 func draftFileName(num int, name string) string {
 	today := time.Now().Format(TimeFormat)
-	return Tr("file_prefix_draft") + sep + today + sep + numberPrefix + strconv.Itoa(num) + sep + name + extension
+	return Tr("file_prefix_draft") + sep + today + sep + numberPrefix +
+		strconv.Itoa(num) + sep + name + extension
 }
 
 type FileInputRouter struct {
@@ -259,7 +270,7 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 			units = append(units, unitval.T{unitval.NewUnit(ins[i+1]), val})
 			log.Debug(units)
 		}
-		c.(*items.Item).Val = val.NewVal(units...)
+		c.(*items.Item).Val = val.NewT(units...)
 	}
 
 	// should put this in a local type

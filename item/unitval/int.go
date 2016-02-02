@@ -49,6 +49,32 @@ func MapToSlice(m map[string]T) []T {
 	return out
 }
 
+func SliceTotal(vals []T) (total int) {
+	for _, v := range vals {
+		total += v.Total()
+	}
+	return
+}
+
+func SliceFromSliceTotalUntilLimit(vals []T, limit int) []T {
+	var out []T
+	for _, v := range vals {
+		out = append(out, v)
+		if SliceTotal(out) >= limit {
+			return out
+		}
+	}
+	return out
+}
+
+func CopyMap(originalMap map[string]T) map[string]T {
+	newMap := make(map[string]T, 0)
+	for k, v := range originalMap {
+		newMap[k] = v
+	}
+	return newMap
+}
+
 type ByFactDesc []T
 
 func (f ByFactDesc) Len() int           { return len(f) }

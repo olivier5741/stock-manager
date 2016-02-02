@@ -7,18 +7,18 @@ import (
 	"strconv"
 )
 
-// Items a list of items
-type Items map[string]Item
+// T a list of items
+type T map[string]Item
 
 // Item with related product and the value
 type Item struct {
 	Prod Prod
-	Val  val.Val
+	Val  val.T
 }
 
 // String print the product and value of the item
-func (i Item) String() string {
-	return i.Prod.String() + ": " + i.Val.String()
+func (it Item) String() string {
+	return it.Prod.String() + ": " + it.Val.String()
 }
 
 // Prod the (item) product
@@ -31,7 +31,7 @@ func (p Prod) String() string {
 
 // Add creates a list by adding value of each matching item
 // and then apprend the non-matching one
-func Add(ins, adds Items) Items {
+func Add(ins, adds T) T {
 	its := ins.Copy()
 	for key, add := range adds {
 		if it, ok := its[key]; ok {
@@ -42,10 +42,10 @@ func Add(ins, adds Items) Items {
 	return its
 }
 
-// Add creates a list by subtracting value from right item
+// Sub creates a list by subtracting value from right item
 // to matching left item, append the non-matching left items
 // and append the negative of the right non-matching items
-func Sub(ins, subs Items) Items {
+func Sub(ins, subs T) T {
 	its := ins.Copy()
 	for key, sub := range subs {
 		if it, ok := its[key]; ok {
@@ -62,7 +62,7 @@ func Sub(ins, subs Items) Items {
 // the right list : non-existant items from the left list and
 // the difference between matching items
 // if bigger than 0 or if cannot be compiled as an integer
-func Missing(its, exps Items) (out Items) {
+func Missing(its, exps T) (out T) {
 	out = map[string]Item{}
 	for key, exp := range exps {
 		if it, ok := its[key]; ok {
@@ -77,7 +77,7 @@ func Missing(its, exps Items) (out Items) {
 }
 
 // Empty creates a list by setting the value of each item to empty
-func (its Items) Empty() (out Items) {
+func (its T) Empty() (out T) {
 	out = map[string]Item{}
 	for key, it := range its {
 		out[key] = Item{it.Prod, it.Val.Empty()}
@@ -86,8 +86,8 @@ func (its Items) Empty() (out Items) {
 }
 
 // Copy creates a list by copying each item
-func (its Items) Copy() (out Items) {
-	out = make(Items, len(its))
+func (its T) Copy() (out T) {
+	out = make(T, len(its))
 	for key, orig := range its {
 		out[key] = orig
 	}
@@ -95,7 +95,7 @@ func (its Items) Copy() (out Items) {
 }
 
 // should call number of units on val ...
-func (its Items) MaxUnit() (max int) {
+func (its T) MaxUnit() (max int) {
 	for _, it := range its {
 		if len(it.Val.Vals) > max {
 			max = len(it.Val.Vals)
@@ -104,7 +104,7 @@ func (its Items) MaxUnit() (max int) {
 	return
 }
 
-func (its Items) StringSlice() [][]string {
+func (its T) StringSlice() [][]string {
 	var out [][]string
 	max := its.MaxUnit()
 	for _, it := range its {
@@ -113,8 +113,8 @@ func (its Items) StringSlice() [][]string {
 	return out
 }
 
-func FromSlice(items []Item) (out Items) {
-	out = Items{}
+func FromSlice(items []Item) (out T) {
+	out = T{}
 	for _, item := range items {
 		out[string(item.Prod)] = item
 	}
@@ -122,11 +122,11 @@ func FromSlice(items []Item) (out Items) {
 }
 
 // remove limit to somewhere else ...
-func (v Item) StringSlice(unitNb int) []string {
+func (it Item) StringSlice(unitNb int) []string {
 	s := make([]string, unitNb*2+1)
-	s[0] = v.Prod.String()
+	s[0] = it.Prod.String()
 	count := 1
-	for _, u := range v.Val.ValsWithByFactorDesc() {
+	for _, u := range it.Val.ValsWithByFactDesc() {
 		if count == unitNb*2+1 {
 			break
 		}
@@ -137,7 +137,7 @@ func (v Item) StringSlice(unitNb int) []string {
 	return s
 }
 
-func MapItemsMap(its map[string]Items) map[string]map[string]string {
+func ItemsMapToStringMapTable(its map[string]T) map[string]map[string]string {
 	out := make(map[string]map[string]string, 0)
 	for date, it := range its {
 		newRow := make(map[string]string)
