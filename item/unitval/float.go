@@ -37,5 +37,6 @@ type TFloat struct {
 }
 
 func (u TFloat) String() string {
-	return strconv.FormatFloat(u.Val, 'f', 2, 64) + " " + u.Unit.String()
+	return strconv.FormatFloat(u.Val, 'f', 2, 64) + 
+	" " + u.Unit.String()
 }

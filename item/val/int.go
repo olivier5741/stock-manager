@@ -9,11 +9,12 @@ type T struct {
 	Vals map[string]unitval.T
 }
 
-func (v T) String() (s string) {
+func (v T) String() string {
+	var s string
 	for _, u := range v.ValsByFactDesc() {
 		s += u.String() + ", "
 	}
-	return
+	return s
 }
 
 func NewT(units ...unitval.T) T {
@@ -24,7 +25,7 @@ func NewT(units ...unitval.T) T {
 	return T{vals}
 }
 
-func (v T) Empty() (out T) {
+func (v T) Empty() T {
 	vals := make(map[string]unitval.T, 0)
 	for k, u := range v.Vals {
 		vals[k] = u.NewSet(0)
@@ -40,24 +41,20 @@ func (v T) Neg() T {
 	return T{vals}
 }
 
-func Add(v1, v2 T) (out T) {
-
-	out = v1.Copy()
-
+func Add(v1, v2 T) T {
+	out := v1.Copy()
 	for _, v := range v2.Values() {
 		if old, ok := out.Vals[v.ID()]; ok {
 			v = unitval.Add(old, v)
 		}
 		out.Vals[v.ID()] = v
 	}
-	return
+	return out
 }
 
-func Sub(v1, v2 T) (out T) {
-
-	out = v1.Copy()
+func Sub(v1, v2 T) T {
+	out := v1.Copy()
 	out = valByValSub(out, v2.valsWithout())
-
 	for _, v := range v2.ValsWithByFactAsc() {
 		if old, ok := out.Vals[v.ID()]; !ok {
 			out.Vals[v.ID()] = unitval.T{v.Unit, -v.Val}
@@ -96,7 +93,7 @@ func Sub(v1, v2 T) (out T) {
 		}
 	}
 
-	return
+	return out
 }
 
 // Perhaps delete noWithout
@@ -123,8 +120,8 @@ func (v T) Redistribute() T {
 	return T{out}
 }
 
-func (v T) Total() (out T) {
-	out = T{v.valsWithout()}
+func (v T) Total() T {
+	out := T{v.valsWithout()}
 	with := v.ValsWithByFactDesc()
 	total := 0
 	for _, val := range with {
@@ -135,10 +132,10 @@ func (v T) Total() (out T) {
 		out.Vals[smallest.ID()] =
 			smallest.NewSet(total / smallest.Fact)
 	}
-	return
+	return out
 }
 
-func (v T) TotalWithRound(u unitval.Unit) (out unitval.TFloat) {
+func (v T) TotalWithRound(u unitval.Unit) unitval.TFloat {
 	total := 0.0
 	for _, val := range v.valsWith() {
 		total += float64(val.Total()) / float64(u.Fact)
@@ -146,25 +143,26 @@ func (v T) TotalWithRound(u unitval.Unit) (out unitval.TFloat) {
 	return unitval.TFloat{u, total}
 }
 
-func (v T) TotalWith() (total int) {
+func (v T) TotalWith() int {
+	var t int
 	for _, val := range v.valsWith() {
-		total += val.Total()
+		t += val.Total()
 	}
-	return
+	return t
 }
 
 func (v T) Copy() T {
 	return NewT(v.Values()...)
 }
 
-func (v T) valsWithout() (out map[string]unitval.T) {
-	_, out = v.ValsFactFilter()
-	return
+func (v T) valsWithout() map[string]unitval.T {
+	_, out := v.ValsFactFilter()
+	return out
 }
 
-func (v T) valsWith() (out map[string]unitval.T) {
-	out, _ = v.ValsFactFilter()
-	return
+func (v T) valsWith() map[string]unitval.T {
+	out, _ := v.ValsFactFilter()
+	return out
 }
 
 func (v T) ValsWithByFactAsc() []unitval.T {
@@ -175,8 +173,8 @@ func (v T) ValsWithByFactDesc() []unitval.T {
 	return T{Vals: v.valsWith()}.ValsByFactDesc()
 }
 
-func valByValSub(v1 T, vals map[string]unitval.T) (val T) {
-	val = v1.Copy()
+func valByValSub(v1 T, vals map[string]unitval.T) T {
+	val := v1.Copy()
 	for _, v := range vals {
 		if old, ok := val.Vals[v.ID()]; ok {
 			val.Vals[v.ID()] = unitval.Sub(old, v)
@@ -184,10 +182,10 @@ func valByValSub(v1 T, vals map[string]unitval.T) (val T) {
 			val.Vals[v.ID()] = unitval.T{v.Unit, -v.Val}
 		}
 	}
-	return
+	return val
 }
 
-func (v T) ValsFactFilter() (with map[string]unitval.T, without map[string]unitval.T) {
+func (v T) ValsFactFilter() (with, without map[string]unitval.T) {
 	with = make(map[string]unitval.T, 0)
 	without = make(map[string]unitval.T, 0)
 	for _, val := range v.Vals {

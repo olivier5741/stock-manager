@@ -62,8 +62,8 @@ func Sub(ins, subs T) T {
 // the right list : non-existant items from the left list and
 // the difference between matching items
 // if bigger than 0 or if cannot be compiled as an integer
-func Missing(its, exps T) (out T) {
-	out = map[string]Item{}
+func Missing(its, exps T) T {
+	out := map[string]Item{}
 	for key, exp := range exps {
 		if it, ok := its[key]; ok {
 			if diff, no, intDiff := val.Diff(exp.Val, it.Val); no && intDiff > 0 {
@@ -73,35 +73,36 @@ func Missing(its, exps T) (out T) {
 			out[key] = Item{exp.Prod, exp.Val.Copy()}
 		}
 	}
-	return
+	return out
 }
 
 // Empty creates a list by setting the value of each item to empty
-func (its T) Empty() (out T) {
-	out = map[string]Item{}
+func (its T) Empty() T {
+	out := map[string]Item{}
 	for key, it := range its {
 		out[key] = Item{it.Prod, it.Val.Empty()}
 	}
-	return
+	return out
 }
 
 // Copy creates a list by copying each item
-func (its T) Copy() (out T) {
-	out = make(T, len(its))
+func (its T) Copy() T {
+	out := make(T, len(its))
 	for key, orig := range its {
 		out[key] = orig
 	}
-	return
+	return out
 }
 
 // should call number of units on val ...
-func (its T) MaxUnit() (max int) {
+func (its T) MaxUnit() int {
+	var max int
 	for _, it := range its {
 		if len(it.Val.Vals) > max {
 			max = len(it.Val.Vals)
 		}
 	}
-	return
+	return max
 }
 
 func (its T) StringSlice() [][]string {
@@ -113,12 +114,12 @@ func (its T) StringSlice() [][]string {
 	return out
 }
 
-func FromSlice(items []Item) (out T) {
-	out = T{}
+func FromSlice(items []Item) T {
+	out := T{}
 	for _, item := range items {
 		out[string(item.Prod)] = item
 	}
-	return
+	return out
 }
 
 // remove limit to somewhere else ...
