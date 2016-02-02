@@ -1,18 +1,18 @@
 package stock
 
 import (
-	. "github.com/olivier5741/stock-manager/item"
+	"github.com/olivier5741/stock-manager/item/items"
 	. "github.com/olivier5741/stock-manager/skelet"
 	. "github.com/olivier5741/stock-manager/stock/skelet"
 )
 
 type Stock struct {
 	Name string
-	Items
+	items.Items
 }
 
 func MakeStock(name string) Ider {
-	return &Stock{name, Items{}}
+	return &Stock{name, items.Items{}}
 }
 
 func FromActions(acts []interface{}, id string) Ider {
@@ -20,9 +20,9 @@ func FromActions(acts []interface{}, id string) Ider {
 	for _, act := range acts {
 		switch act := act.(type) {
 		case In:
-			stock.Items.Add(act.Items)
+			stock.Items = items.Add(stock.Items, act.Items)
 		case Out:
-			stock.Items.Sub(act.Items)
+			stock.Items = items.Sub(stock.Items, act.Items)
 		case Inventory:
 			stock.Items = act.Items.Copy()
 		case Rename:
@@ -41,7 +41,7 @@ type Out ItemsAction
 type Inventory ItemsAction
 
 type ItemsAction struct {
-	Items
+	items.Items
 }
 
 func (s Stock) ID() string {
@@ -49,13 +49,13 @@ func (s Stock) ID() string {
 }
 
 func (s *Stock) SubmitIn(i InCmd) (e In, err error) {
-	s.Items.Add(i.Items)
+	s.Items = items.Add(s.Items, i.Items)
 	e = In{i.Items}
 	return
 }
 
 func (s *Stock) SubmitOut(o OutCmd) (e Out, err error) {
-	s.Items.Sub(o.Items)
+	s.Items = items.Sub(s.Items, o.Items)
 	e = Out{o.Items}
 	return
 }

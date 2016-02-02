@@ -1,7 +1,7 @@
 package stock
 
 import (
-	. "github.com/olivier5741/stock-manager/item"
+	. "github.com/olivier5741/stock-manager/item/items"
 	"time"
 )
 

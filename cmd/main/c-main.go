@@ -15,11 +15,13 @@ import (
 
 	"github.com/nicksnyder/go-i18n/i18n"
 	"github.com/olivier5741/stock-manager/cmd/stock"
-	"github.com/olivier5741/stock-manager/item"
+	"github.com/olivier5741/stock-manager/item/items"
+	"github.com/olivier5741/stock-manager/item/val"
+	"github.com/olivier5741/stock-manager/item/unitval"
 	"github.com/olivier5741/stock-manager/skelet"
 	stockBL "github.com/olivier5741/stock-manager/stock/main"
 	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
-	"github.com/olivier5741/stock-manager/strtab"
+	"github.com/olivier5741/strtab"
 )
 
 // ATTENTION : tout méthode qui modifie le struct doit accepter un pointer !! ??
@@ -57,14 +59,6 @@ var (
 	}
 )
 
-func itemArrayToMap(items []item.Item) (out item.Items) {
-	out = item.Items{}
-	for _, item := range items {
-		out[string(item.Prod)] = item
-	}
-	return
-}
-
 func csvToStruct(filename string, h []string, mapper func(s []string, c interface{}),
 	newLiner func() interface{}, appender func(interface{})) {
 
@@ -96,51 +90,6 @@ func csvToStruct(filename string, h []string, mapper func(s []string, c interfac
 		mapper(line, newLine)
 		appender(newLine)
 	}
-}
-
-func mapItem(v item.Item, unitNb int) []string {
-	s := make([]string, unitNb*2+1)
-	s[0] = v.Prod.String()
-	count := 1
-	for _, u := range v.Val.ValsWithByFactorDesc() {
-		if count == unitNb*2+1 {
-			break
-		}
-		s[count] = strconv.Itoa(u.Val)
-		s[count+1] = u.Unit.String()
-		count += 2
-	}
-	return s
-}
-
-func maxUnit(its item.Items) (max int) {
-	for _, it := range its {
-		if len(it.Val.Vals) > max {
-			max = len(it.Val.Vals)
-		}
-	}
-	return
-}
-
-func mapItems(its item.Items) [][]string {
-	var out [][]string
-	max := maxUnit(its)
-	for _, it := range its {
-		out = append(out, mapItem(it, max))
-	}
-	return out
-}
-
-func mapItemsMap(its map[string]item.Items) map[string]map[string]string {
-	out := make(map[string]map[string]string, 0)
-	for date, it := range its {
-		newRow := make(map[string]string)
-		for prod, val := range it {
-			newRow[prod] = strconv.Itoa(val.Val.TotalWith())
-		}
-		out[date] = newRow
-	}
-	return out
 }
 
 type Viewer interface {
@@ -236,19 +185,19 @@ func main() {
 	prodEvolRender := func(tab *strtab.T) [][]string { return tab.GetContentWithHeaders(true) }
 
 	TableView{"main", generatedPrefix + Tr("file_name_stock") + extension,
-		strtab.NewTable(prodValHeader, mapItems(iStock)...), prodValRender}.Show()
+		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(), prodValRender}.Show()
 
 	TableView{"main", draftFileName(3, Tr("file_name_inventory")),
-		strtab.NewTable(prodValHeader, mapItems(iStock)...), prodValRender}.Show()
+		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(), prodValRender}.Show()
 
 	TableView{"main", draftFileName(1, Tr("file_name_stock_in")),
-		strtab.NewTable(prodValHeader, mapItems(iStock.Empty())...), prodValRender}.Show()
+		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(), prodValRender}.Show()
 
 	TableView{"main", draftFileName(2, Tr("file_name_stock_out")),
-		strtab.NewTable(prodValHeader, mapItems(iStock.Empty())...), prodValRender}.Show()
+		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(), prodValRender}.Show()
 
 	TableView{"main", generatedPrefix + Tr("file_name_product") + extension,
-		strtab.NewTableFromMap(mapItemsMap(endPt.ProdValEvolution("main"))).Transpose(), prodEvolRender}.Show()
+		strtab.NewTfromMap(items.MapItemsMap(endPt.ProdValEvolution("main"))).Sort().Transpose().Sort(), prodEvolRender}.Show()
 }
 
 func draftFileName(num int, name string) string {
@@ -299,17 +248,18 @@ func RouteFile(files []os.FileInfo) {
 
 func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
+	// should be somewhere else perhaps
 	mapper := func(ins []string, c interface{}) {
-		c.(*item.Item).Prod = item.Prod(ins[0])
-		var units []item.UnitVal
+		c.(*items.Item).Prod = items.Prod(ins[0])
+		var units []unitval.T
 		for i := 1; i < len(ins)-1; i = i + 2 {
 			val, _ := strconv.Atoi(ins[i])
 			log.Debug("Val")
 			log.Debug(val)
-			units = append(units, item.UnitVal{item.NewUnit(ins[i+1]), val})
+			units = append(units, unitval.T{unitval.NewUnit(ins[i+1]), val})
 			log.Debug(units)
 		}
-		c.(*item.Item).Val = item.NewVal(units...)
+		c.(*items.Item).Val = val.NewVal(units...)
 	}
 
 	// should put this in a local type
@@ -325,16 +275,16 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		Tr("csv_header_item_unit", 4),
 	}
 
-	var its []item.Item
-	newLiner := func() interface{} { return new(item.Item) }
+	var its []items.Item
+	newLiner := func() interface{} { return new(items.Item) }
 	appender := func(v interface{}) {
-		a := v.(*item.Item)
+		a := v.(*items.Item)
 		its = append(its, *a)
 	}
 
 	// should put this inside switch case
 	csvToStruct(path.String(), headers, mapper, newLiner, appender)
-	itsMap := itemArrayToMap(its)
+	itsMap := items.FromSlice(its)
 
 	switch path.Act {
 	case Tr("file_name_stock_in"):
