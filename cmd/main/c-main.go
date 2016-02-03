@@ -16,8 +16,8 @@ import (
 	"github.com/nicksnyder/go-i18n/i18n"
 	"github.com/olivier5741/stock-manager/cmd/stock"
 	"github.com/olivier5741/stock-manager/item/items"
-	"github.com/olivier5741/stock-manager/item/unitval"
-	"github.com/olivier5741/stock-manager/item/val"
+	"github.com/olivier5741/stock-manager/item/quant"
+	"github.com/olivier5741/stock-manager/item/amount"
 	"github.com/olivier5741/stock-manager/skelet"
 	stockBL "github.com/olivier5741/stock-manager/stock/main"
 	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
@@ -262,15 +262,15 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 	// should be somewhere else perhaps
 	mapper := func(ins []string, c interface{}) {
 		c.(*items.Item).Prod = items.Prod(ins[0])
-		var units []unitval.T
+		var units []quant.Q
 		for i := 1; i < len(ins)-1; i = i + 2 {
 			val, _ := strconv.Atoi(ins[i])
 			log.Debug("Val")
 			log.Debug(val)
-			units = append(units, unitval.T{unitval.NewUnit(ins[i+1]), val})
+			units = append(units, quant.Q{quant.NewUnit(ins[i+1]), val})
 			log.Debug(units)
 		}
-		c.(*items.Item).Val = val.NewT(units...)
+		c.(*items.Item).Amount = amount.NewA(units...)
 	}
 
 	// should put this in a local type

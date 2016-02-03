@@ -1,13 +1,13 @@
 package itemT
 
 import (
-	"github.com/olivier5741/stock-manager/item/unitval"
-	"github.com/olivier5741/stock-manager/item/val"
+	"github.com/olivier5741/stock-manager/item/quant"
+	"github.com/olivier5741/stock-manager/item/amount"
 	"testing"
 )
 
 func TestAddVal(t *testing.T) {
-	v1 := val.NewT([]unitval.T{
+	v1 := amount.NewA([]quant.Q{
 		{Pillule, 12},
 		{Tablette, 2},
 		{Boite, 2},
@@ -16,19 +16,19 @@ func TestAddVal(t *testing.T) {
 
 	t.Log(v1.String())
 
-	v2 := val.NewT([]unitval.T{
+	v2 := amount.NewA([]quant.Q{
 		{Tablette, 3},
 		{Boite, 2},
 	}...)
 
 	t.Log(v2.String())
 
-	got := val.Add(v1, v2)
+	got := amount.Add(v1, v2)
 
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Carton))
 
-	exp := val.NewT([]unitval.T{
+	exp := amount.NewA([]quant.Q{
 		{Pillule, 12},
 		{Tablette, 5},
 		{Boite, 4},
@@ -39,7 +39,7 @@ func TestAddVal(t *testing.T) {
 }
 
 func TestSub(t *testing.T) {
-	v1 := val.NewT([]unitval.T{
+	v1 := amount.NewA([]quant.Q{
 		{Pillule, 12},
 		{Tablette, 2},
 		{Boite, 2},
@@ -48,7 +48,7 @@ func TestSub(t *testing.T) {
 
 	t.Log(v1.String())
 
-	v2 := val.NewT([]unitval.T{
+	v2 := amount.NewA([]quant.Q{
 		{Pillule, 16},
 		{Tablette, 3},
 		{Boite, 2},
@@ -56,12 +56,12 @@ func TestSub(t *testing.T) {
 
 	t.Log(v2.String())
 
-	got := val.Sub(v1, v2)
+	got := amount.Sub(v1, v2)
 
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Carton))
 
-	exp := val.NewT([]unitval.T{
+	exp := amount.NewA([]quant.Q{
 		{Pillule, 11},
 		{Tablette, 1},
 		{Boite, 9},
@@ -72,7 +72,7 @@ func TestSub(t *testing.T) {
 }
 
 func TestDiff(t *testing.T) {
-	v1 := val.NewT([]unitval.T{
+	v1 := amount.NewA([]quant.Q{
 		{Pillule, 12},
 		{Tablette, 40},
 		{Boite, 2},
@@ -81,7 +81,7 @@ func TestDiff(t *testing.T) {
 
 	t.Log(v1.String())
 
-	v2 := val.NewT([]unitval.T{
+	v2 := amount.NewA([]quant.Q{
 		{Pillule, 16},
 		{Tablette, 3},
 		{Boite, 2},
@@ -89,12 +89,12 @@ func TestDiff(t *testing.T) {
 
 	t.Log(v2.String())
 
-	got, _, _ := val.Diff(v1, v2)
+	got, _, _ := amount.Diff(v1, v2)
 
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Carton))
 
-	exp := val.NewT([]unitval.T{
+	exp := amount.NewA([]quant.Q{
 		{Carton, 2},
 		{Boite, 2},
 		{Tablette, 0},
@@ -107,7 +107,7 @@ func TestDiff(t *testing.T) {
 func TestRedistribute(t *testing.T) {
 	// l'unité principale ne peut valoir 0
 
-	v1 := val.NewT([]unitval.T{
+	v1 := amount.NewA([]quant.Q{
 		{Pillule, 50},
 		{Tablette, 3},
 		{Boite, 2},
@@ -120,7 +120,7 @@ func TestRedistribute(t *testing.T) {
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Boite))
 
-	exp := val.NewT([]unitval.T{
+	exp := amount.NewA([]quant.Q{
 		{Pillule, 5},
 		{Tablette, 0},
 		{Boite, 4},
@@ -130,7 +130,7 @@ func TestRedistribute(t *testing.T) {
 }
 
 func TestTotal(t *testing.T) {
-	v1 := val.NewT([]unitval.T{
+	v1 := amount.NewA([]quant.Q{
 		{Inconnu, 21},
 		{Pillule, 50},
 		{Tablette, 3},
@@ -144,7 +144,7 @@ func TestTotal(t *testing.T) {
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Boite))
 
-	exp := val.NewT([]unitval.T{
+	exp := amount.NewA([]quant.Q{
 		{Inconnu, 21},
 		{Pillule, 185},
 	}...)

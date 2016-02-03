@@ -3,7 +3,7 @@
 package items
 
 import (
-	"github.com/olivier5741/stock-manager/item/val"
+	"github.com/olivier5741/stock-manager/item/amount"
 	"strconv"
 )
 
@@ -12,13 +12,13 @@ type T map[string]Item
 
 // Item with related product and the value
 type Item struct {
-	Prod Prod
-	Val  val.T
+	Prod   Prod
+	Amount amount.A
 }
 
 // String print the product and value of the item
 func (it Item) String() string {
-	return it.Prod.String() + ": " + it.Val.String()
+	return it.Prod.String() + ": " + it.Amount.String()
 }
 
 // Prod the (item) product
@@ -35,7 +35,7 @@ func Add(ins, adds T) T {
 	its := ins.Copy()
 	for key, add := range adds {
 		if it, ok := its[key]; ok {
-			add.Val = val.Add(it.Val, add.Val)
+			add.Amount = amount.Add(it.Amount, add.Amount)
 		}
 		its[key] = add
 	}
@@ -49,9 +49,9 @@ func Sub(ins, subs T) T {
 	its := ins.Copy()
 	for key, sub := range subs {
 		if it, ok := its[key]; ok {
-			sub.Val = val.Sub(it.Val, sub.Val)
+			sub.Amount = amount.Sub(it.Amount, sub.Amount)
 		} else {
-			sub.Val = sub.Val.Neg()
+			sub.Amount = sub.Amount.Neg()
 		}
 		its[key] = sub
 	}
@@ -66,11 +66,11 @@ func Missing(its, exps T) T {
 	out := map[string]Item{}
 	for key, exp := range exps {
 		if it, ok := its[key]; ok {
-			if diff, no, intDiff := val.Diff(exp.Val, it.Val); no && intDiff > 0 {
+			if diff, no, intDiff := amount.Diff(exp.Amount, it.Amount); no && intDiff > 0 {
 				out[key] = Item{it.Prod, diff}
 			}
 		} else {
-			out[key] = Item{exp.Prod, exp.Val.Copy()}
+			out[key] = Item{exp.Prod, exp.Amount.Copy()}
 		}
 	}
 	return out
@@ -80,7 +80,7 @@ func Missing(its, exps T) T {
 func (its T) Empty() T {
 	out := map[string]Item{}
 	for key, it := range its {
-		out[key] = Item{it.Prod, it.Val.Empty()}
+		out[key] = Item{it.Prod, it.Amount.Empty()}
 	}
 	return out
 }
@@ -98,8 +98,9 @@ func (its T) Copy() T {
 func (its T) MaxUnit() int {
 	var max int
 	for _, it := range its {
-		if len(it.Val.Vals) > max {
-			max = len(it.Val.Vals)
+		// TODO method for it.Val.Quants
+		if len(it.Amount.Quants()) > max {
+			max = len(it.Amount.Quants())
 		}
 	}
 	return max
@@ -127,7 +128,7 @@ func (it Item) StringSlice(unitNb int) []string {
 	s := make([]string, unitNb*2+1)
 	s[0] = it.Prod.String()
 	count := 1
-	for _, u := range it.Val.ValsWithByFactDesc() {
+	for _, u := range it.Amount.ValsWithByFactDesc() {
 		if count == unitNb*2+1 {
 			break
 		}
@@ -138,12 +139,12 @@ func (it Item) StringSlice(unitNb int) []string {
 	return s
 }
 
-func ItemsMapToStringMapTable(its map[string]T) map[string]map[string]string {
+func ItemsMapToStringMapTable(itsmap map[string]T) map[string]map[string]string {
 	out := make(map[string]map[string]string, 0)
-	for date, it := range its {
+	for date, its := range itsmap {
 		newRow := make(map[string]string)
-		for prod, val := range it {
-			newRow[prod] = strconv.Itoa(val.Val.TotalWith())
+		for prod, it := range its {
+			newRow[prod] = strconv.Itoa(it.Amount.TotalWith())
 		}
 		out[date] = newRow
 	}
