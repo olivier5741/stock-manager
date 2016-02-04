@@ -1,7 +1,7 @@
 - id: csv_header_factor_stock_unit_order_unit
   translation: Coeff.
 - id: csv_header_item_product
-  translation: Prod
+  translation: Produit
 - id: csv_header_item_value
   translation: Valeur {{.Count}}
 - id: csv_header_item_unit
