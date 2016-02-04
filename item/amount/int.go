@@ -1,4 +1,5 @@
-// this is an amount
+// Package amount provides operations  on an amount
+// such as addition, subtraction ...
 package amount
 
 import (
@@ -6,8 +7,9 @@ import (
 	"sort"
 )
 
+// A represents an amount which consists of several quantities
+// in the same system
 type A struct {
-	// make this private
 	quants map[string]quant.Q
 }
 
@@ -21,7 +23,7 @@ func (am A) String() string {
 	return s
 }
 
-// NewT creates a new amount based on qs quantities
+// NewA creates a new amount based on qs quantities
 func NewA(units ...quant.Q) A {
 	vals := make(map[string]quant.Q, 0)
 	for _, u := range units {
@@ -110,7 +112,10 @@ func Sub(a1, a2 A) A {
 	return out
 }
 
-// Perhaps delete noWithout
+// Diff creates an amount resulting from the subtraction of a2 from a1
+// and also returns if this amount as a single quantity and the value
+// of this quantity
+// TODO  Perhaps delete noWithout
 func Diff(a1, a2 A) (out A, noWithout bool, diff int) {
 	out = Sub(a1, a2).Redistribute()
 	noWithout = len(out.valsWithout()) == 0
@@ -164,7 +169,7 @@ func (am A) TotalWithRound(u quant.Unit) quant.QFloat {
 	return quant.QFloat{u, total}
 }
 
-// TotalWidth returns TODO
+// TotalWith returns TODO
 func (am A) TotalWith() int {
 	var t int
 	for _, val := range am.valsWith() {
@@ -178,26 +183,26 @@ func (am A) Copy() A {
 	return NewA(am.Quants()...)
 }
 
-func (v A) valsWithout() map[string]quant.Q {
-	_, out := v.ValsFactFilter()
+func (am A) valsWithout() map[string]quant.Q {
+	_, out := am.valsFactFilter()
 	return out
 }
 
-func (v A) valsWith() map[string]quant.Q {
-	out, _ := v.ValsFactFilter()
+func (am A) valsWith() map[string]quant.Q {
+	out, _ := am.valsFactFilter()
 	return out
 }
 
-func (v A) ValsWithByFactAsc() []quant.Q {
-	return A{quants: v.valsWith()}.QuantsByFactAsc()
+func (am A) ValsWithByFactAsc() []quant.Q {
+	return A{quants: am.valsWith()}.QuantsByFactAsc()
 }
 
-func (v A) ValsWithByFactDesc() []quant.Q {
-	return A{quants: v.valsWith()}.QuantsByFactDesc()
+func (am A) ValsWithByFactDesc() []quant.Q {
+	return A{quants: am.valsWith()}.QuantsByFactDesc()
 }
 
-func valByValSub(v1 A, vals map[string]quant.Q) A {
-	val := v1.Copy()
+func valByValSub(am A, vals map[string]quant.Q) A {
+	val := am.Copy()
 	for _, v := range vals {
 		if old, ok := val.quants[v.ID()]; ok {
 			val.quants[v.ID()] = quant.Sub(old, v)
@@ -208,7 +213,7 @@ func valByValSub(v1 A, vals map[string]quant.Q) A {
 	return val
 }
 
-func (am A) ValsFactFilter() (with, without map[string]quant.Q) {
+func (am A) valsFactFilter() (with, without map[string]quant.Q) {
 	with = make(map[string]quant.Q, 0)
 	without = make(map[string]quant.Q, 0)
 	for _, val := range am.quants {
@@ -230,6 +235,7 @@ func (am A) Quants() []quant.Q {
 	return list
 }
 
+// QuantsMap return the quantities of a in a map
 func (am A) QuantsMap() map[string]quant.Q {
 	list := make(map[string]quant.Q)
 	for _, val := range am.quants {
