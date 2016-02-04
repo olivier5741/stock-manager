@@ -3,9 +3,9 @@
 - id: csv_header_item_product
   translation: Prod
 - id: csv_header_item_value
-  translation: Val {{.Count}}
+  translation: Valeur {{.Count}}
 - id: csv_header_item_unit
-  translation: Unit {{.Count}}
+  translation: Unite {{.Count}}
 - id: csv_header_order_unit
   translation: Unité Commande
 - id: csv_header_stock_min
