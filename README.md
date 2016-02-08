@@ -17,10 +17,10 @@ stock-manager-0.2/
   e-stock-manager-0.2.exe                   // Lancer pour regénérer (stock, produits, en attente)
   en attente-2016-01-30-n3-inventaire.csv  // Inventaire généré
   en attente-2016-01-30-n2-sortie.csv      // Bon de sortie généré
-  en attente-2016-01-30-n1-entrée.csv      // Bon d'entrée généré
+  en attente-2016-01-30-n1-entree.csv      // Bon d'entrée généré
   2016-01-29-n1-inventaire.csv             // Inventaire
   2016-01-28-n2-sortie.csv                 // Bon de sortie
-  2016-01-28-n1-entrée                     // Bon d'entrée
+  2016-01-28-n1-entree                     // Bon d'entrée
 ```
 
 ## Golang run
