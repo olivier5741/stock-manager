@@ -2,7 +2,7 @@ package stock
 
 import (
 	"github.com/olivier5741/stock-manager/skelet"
-	"github.com/olivier5741/stock-manager/stock/main"
+	"github.com/olivier5741/stock-manager/stock"
 )
 
 type DummyStockRepository struct {

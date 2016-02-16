@@ -1,27 +1,28 @@
 package item
 
 import (
-	"github.com/olivier5741/stock-manager/item/amount"
 	"strconv"
+	"github.com/olivier5741/stock-manager/item/amount"
 )
 
-// Item with related product and the value
-type Item struct {
+// I Item  with related product and the value
+type I struct {
 	Prod   Prod
 	Amount amount.A
 }
 
 // String print the product and value of the item
-func (it Item) String() string {
+func (it I) String() string {
 	return it.Prod.String() + ": " + it.Amount.String()
 }
 
-// remove limit to somewhere else ...
-func (it Item) StringSlice(unitNb int) []string {
+// StringSlice formats the item as a csv row (string array).
+// Product; first value; first unit, second value; second unit; ...
+func (it I) StringSlice(unitNb int) []string {
 	s := make([]string, unitNb*2+1)
 	s[0] = it.Prod.String()
 	count := 1
-	for _, u := range it.Amount.ValsWithByFactDesc() {
+	for _, u := range it.Amount.QuantsWithByFactDesc() {
 		if count == unitNb*2+1 {
 			break
 		}

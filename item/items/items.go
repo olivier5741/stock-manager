@@ -3,17 +3,17 @@
 package items
 
 import (
-	"github.com/olivier5741/stock-manager/item/amount"
 	"github.com/olivier5741/stock-manager/item"
+	"github.com/olivier5741/stock-manager/item/amount"
 	"strconv"
 )
 
 // T a list of items
-type T map[string]item.Item
+type I map[string]item.I
 
 // Add creates a list by adding value of each matching item
 // and then apprend the non-matching one
-func Add(ins, adds T) T {
+func Add(ins, adds I) I {
 	its := ins.Copy()
 	for key, add := range adds {
 		if it, ok := its[key]; ok {
@@ -27,7 +27,7 @@ func Add(ins, adds T) T {
 // Sub creates a list by subtracting value from right item
 // to matching left item, append the non-matching left items
 // and append the negative of the right non-matching items
-func Sub(ins, subs T) T {
+func Sub(ins, subs I) I {
 	its := ins.Copy()
 	for key, sub := range subs {
 		if it, ok := its[key]; ok {
@@ -44,32 +44,32 @@ func Sub(ins, subs T) T {
 // the right list : non-existant items from the left list and
 // the difference between matching items
 // if bigger than 0 or if cannot be compiled as an integer
-func Missing(its, exps T) T {
-	out := map[string]item.Item{}
+func Missing(its, exps I) I {
+	out := map[string]item.I{}
 	for key, exp := range exps {
 		if it, ok := its[key]; ok {
 			if diff, no, intDiff := amount.Diff(exp.Amount, it.Amount); no && intDiff > 0 {
-				out[key] = item.Item{it.Prod, diff}
+				out[key] = item.I{it.Prod, diff}
 			}
 		} else {
-			out[key] = item.Item{exp.Prod, exp.Amount.Copy()}
+			out[key] = item.I{exp.Prod, exp.Amount.Copy()}
 		}
 	}
 	return out
 }
 
 // Empty creates a list by setting the value of each item to empty
-func (its T) Empty() T {
-	out := map[string]item.Item{}
+func (its I) Empty() I {
+	out := map[string]item.I{}
 	for key, it := range its {
-		out[key] = item.Item{it.Prod, it.Amount.Empty()}
+		out[key] = item.I{it.Prod, it.Amount.Empty()}
 	}
 	return out
 }
 
 // Copy creates a list by copying each item
-func (its T) Copy() T {
-	out := make(T, len(its))
+func (its I) Copy() I {
+	out := make(I, len(its))
 	for key, orig := range its {
 		out[key] = orig
 	}
@@ -77,7 +77,7 @@ func (its T) Copy() T {
 }
 
 // should call number of units on val ...
-func (its T) MaxUnit() int {
+func (its I) MaxUnit() int {
 	var max int
 	for _, it := range its {
 		// TODO method for it.Val.Quants
@@ -88,7 +88,7 @@ func (its T) MaxUnit() int {
 	return max
 }
 
-func (its T) StringSlice() [][]string {
+func (its I) StringSlice() [][]string {
 	var out [][]string
 	max := its.MaxUnit()
 	for _, it := range its {
@@ -97,15 +97,15 @@ func (its T) StringSlice() [][]string {
 	return out
 }
 
-func FromSlice(items []item.Item) T {
-	out := T{}
+func FromSlice(items []item.I) I {
+	out := I{}
 	for _, item := range items {
 		out[string(item.Prod)] = item
 	}
 	return out
 }
 
-func ItemsMapToStringMapTable(itsmap map[string]T) map[string]map[string]string {
+func ItemsMapToStringMapTable(itsmap map[string]I) map[string]map[string]string {
 	out := make(map[string]map[string]string, 0)
 	for date, its := range itsmap {
 		newRow := make(map[string]string)

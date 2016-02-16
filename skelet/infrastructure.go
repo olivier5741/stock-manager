@@ -2,6 +2,7 @@ package skelet
 
 import (
 	"fmt"
+	// TODO : replace with Campion [golang at FOSDEM] logger
 	log "github.com/Sirupsen/logrus"
 )
 

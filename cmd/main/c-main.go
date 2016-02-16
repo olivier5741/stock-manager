@@ -14,14 +14,13 @@ import (
 	"time"
 
 	"github.com/nicksnyder/go-i18n/i18n"
-	"github.com/olivier5741/stock-manager/cmd/stock"
-	"github.com/olivier5741/stock-manager/item/items"
+	stockCmd "github.com/olivier5741/stock-manager/cmd/stock"
 	"github.com/olivier5741/stock-manager/item"
-	"github.com/olivier5741/stock-manager/item/quant"
 	"github.com/olivier5741/stock-manager/item/amount"
+	"github.com/olivier5741/stock-manager/item/items"
+	"github.com/olivier5741/stock-manager/item/quant"
 	"github.com/olivier5741/stock-manager/skelet"
-	stockBL "github.com/olivier5741/stock-manager/stock/main"
-	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
+	"github.com/olivier5741/stock-manager/stock"
 	"github.com/olivier5741/strtab"
 )
 
@@ -43,16 +42,16 @@ var (
 	loggingPrefix   = "l" + sep
 	numberPrefix    = "n"
 
-	repo  = stock.MakeDummyStockRepository()
-	endPt = stock.EndPt{Db: repo}
+	repo  = stockCmd.MakeDummyStockRepository()
+	endPt = stockCmd.EndPt{Db: repo}
 
 	stockRoute = func(t skelet.Ider) (ok bool, a skelet.AggAct, p skelet.EvtSrcPersister) {
 		switch t.(type) {
-		case stockSk.InCmd:
+		case stock.InCmd:
 			return true, endPt.HandleIn, repo
-		case stockSk.OutCmd:
+		case stock.OutCmd:
 			return true, endPt.HandleOut, repo
-		case stockSk.InventoryCmd:
+		case stock.InventoryCmd:
 			return true, endPt.HandleInventory, repo
 		default:
 			return false, nil, nil
@@ -169,7 +168,7 @@ func main() {
 	RouteFile(files)
 
 	stockInt, err4 := endPt.Db.Get("main")
-	iStock := stockInt.(*stockBL.Stock).T
+	iStock := stockInt.(*stock.Stock).I
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
@@ -254,7 +253,7 @@ func RouteFile(files []os.FileInfo) {
 			continue
 		}
 
-		skelet.ExecuteCommand(skelet.Cmd{T: out, Route: stockRoute}, stock.Chain)
+		skelet.ExecuteCommand(skelet.Cmd{T: out, Route: stockRoute}, stockCmd.Chain)
 	}
 }
 
@@ -262,7 +261,7 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
 	// should be somewhere else perhaps
 	mapper := func(ins []string, c interface{}) {
-		c.(*item.Item).Prod = item.Prod(ins[0])
+		c.(*item.I).Prod = item.Prod(ins[0])
 		var units []quant.Q
 		for i := 1; i < len(ins)-1; i = i + 2 {
 			val, _ := strconv.Atoi(ins[i])
@@ -271,7 +270,7 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 			units = append(units, quant.Q{quant.NewUnit(ins[i+1]), val})
 			log.Debug(units)
 		}
-		c.(*item.Item).Amount = amount.NewA(units...)
+		c.(*item.I).Amount = amount.NewA(units...)
 	}
 
 	// should put this in a local type
@@ -287,10 +286,10 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		Tr("csv_header_item_unit", 4),
 	}
 
-	var its []item.Item
-	newLiner := func() interface{} { return new(item.Item) }
+	var its []item.I
+	newLiner := func() interface{} { return new(item.I) }
 	appender := func(v interface{}) {
-		a := v.(*item.Item)
+		a := v.(*item.I)
 		its = append(its, *a)
 	}
 
@@ -300,11 +299,11 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
 	switch path.Act {
 	case Tr("file_name_stock_in"):
-		return stockSk.InCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
+		return stock.InCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.ID}, nil
 	case Tr("file_name_stock_out"):
-		return stockSk.OutCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
+		return stock.OutCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.ID}, nil
 	case Tr("file_name_inventory"):
-		return stockSk.InventoryCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.Id}, nil
+		return stock.InventoryCmd{path.Stock, itsMap, path.Date.Format(TimeFormat) + sep + numberPrefix + path.ID}, nil
 
 	}
 	return nil, fmt.Errorf(Tr("no_action_for_filename_error")) // No action found
@@ -347,7 +346,7 @@ func ParseFilename(s string) (f Filename, err error) {
 	f.Stock = "main" //To refactor
 
 	//Id
-	f.Id = strings.TrimPrefix(args[3], numberPrefix)
+	f.ID = strings.TrimPrefix(args[3], numberPrefix)
 
 	//Action
 	f.Act = args[4]
@@ -357,11 +356,11 @@ func ParseFilename(s string) (f Filename, err error) {
 
 type Filename struct {
 	Date                        time.Time
-	Stock, Act, Id, Ext, Status string
+	Stock, Act, ID, Ext, Status string
 }
 
 func (f Filename) String() string {
-	s := f.Date.Format(TimeFormat) + sep + numberPrefix + f.Id + sep + f.Act
+	s := f.Date.Format(TimeFormat) + sep + numberPrefix + f.ID + sep + f.Act
 	if f.Status != "" {
 		s = s + sep + f.Status
 	}

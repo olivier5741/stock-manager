@@ -2,30 +2,30 @@ package stock
 
 import (
 	"github.com/olivier5741/stock-manager/item/items"
-	sk "github.com/olivier5741/stock-manager/skelet"
-	stockM "github.com/olivier5741/stock-manager/stock/main"
+	"github.com/olivier5741/stock-manager/skelet"
+	"github.com/olivier5741/stock-manager/stock"
 )
 
-func (endPt EndPt) ProdValEvolution(id string) (data map[string]items.T) {
+func (endPt EndPt) ProdValEvolution(id string) (data map[string]items.I) {
 	// TODO : should be generated when even arrives
 	acts := endPt.Db.GetAllEvents(id)
-	data = make(map[string]items.T, len(acts))
-	state := make(items.T, 0)
+	data = make(map[string]items.I, len(acts))
+	state := make(items.I, 0)
 
 	i := 0
 loop:
 	for _, a := range acts {
-		switch act := a.(sk.Event).Act.(type) {
-		case stockM.In:
-			state = items.Add(state, act.T)
-		case stockM.Out:
-			state = items.Sub(state, act.T)
-		case stockM.Inventory:
-			state = act.T.Copy()
+		switch act := a.(skelet.Event).Act.(type) {
+		case stock.In:
+			state = items.Add(state, act.I)
+		case stock.Out:
+			state = items.Sub(state, act.I)
+		case stock.Inventory:
+			state = act.I.Copy()
 		default:
 			continue loop
 		}
-		data[a.(sk.Event).Date] = state.Copy()
+		data[a.(skelet.Event).Date] = state.Copy()
 		i++
 	}
 

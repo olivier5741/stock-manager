@@ -1,8 +1,8 @@
 package itemT
 
 import (
-	"github.com/olivier5741/stock-manager/item/quant"
 	"github.com/olivier5741/stock-manager/item/amount"
+	"github.com/olivier5741/stock-manager/item/quant"
 	"testing"
 )
 

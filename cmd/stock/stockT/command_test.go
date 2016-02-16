@@ -2,11 +2,10 @@ package stockT
 
 import (
 	stockCmd "github.com/olivier5741/stock-manager/cmd/stock"
-	"github.com/olivier5741/stock-manager/item/items"
 	"github.com/olivier5741/stock-manager/item"
-	sk "github.com/olivier5741/stock-manager/skelet"
-	stock "github.com/olivier5741/stock-manager/stock/main"
-	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
+	"github.com/olivier5741/stock-manager/item/items"
+	"github.com/olivier5741/stock-manager/skelet"
+	"github.com/olivier5741/stock-manager/stock"
 	"testing"
 )
 
@@ -14,24 +13,24 @@ func TestMain(t *testing.T) {
 
 	// It could be interesting to retain 'Route' in some kind of object
 
-	cmd1 := sk.Cmd{
-		T:     stockSk.InCmd{"Carlsbourg", items.T{IsoK: Iso4}, "2016-01-27"},
+	cmd1 := skelet.Cmd{
+		T:     stock.InCmd{"Carlsbourg", items.I{IsoK: Iso4}, "2016-01-27"},
 		Route: stockRoute,
 	}
 
-	cmd2 := sk.Cmd{
-		T:     stockSk.OutCmd{"Carlsbourg", items.T{IsoK: Iso1}, "2016-01-28"},
+	cmd2 := skelet.Cmd{
+		T:     stock.OutCmd{"Carlsbourg", items.I{IsoK: Iso1}, "2016-01-28"},
 		Route: stockRoute,
 	}
 
-	cmd3 := sk.Cmd{
-		T:     stockSk.InventoryCmd{"Carlsbourg", items.T{IsoK: Iso2}, "2016-01-29"},
+	cmd3 := skelet.Cmd{
+		T:     stock.InventoryCmd{"Carlsbourg", items.I{IsoK: Iso2}, "2016-01-29"},
 		Route: stockRoute,
 	}
 
-	sk.ExecuteCommand(cmd1, stockCmd.Chain)
-	sk.ExecuteCommand(cmd2, stockCmd.Chain)
-	sk.ExecuteCommand(cmd3, stockCmd.Chain)
+	skelet.ExecuteCommand(cmd1, stockCmd.Chain)
+	skelet.ExecuteCommand(cmd2, stockCmd.Chain)
+	skelet.ExecuteCommand(cmd3, stockCmd.Chain)
 
 	c, err := repo.Get("Carlsbourg")
 
@@ -41,7 +40,7 @@ func TestMain(t *testing.T) {
 
 	s := c.(*stock.Stock)
 
-	exps := map[string]item.Item{IsoK: Iso2}
+	exps := map[string]item.I{IsoK: Iso2}
 
-	CheckItemsValueAndExistence(t, s.T, exps, "stock")
+	CheckItemsValueAndExistence(t, s.I, exps, "stock")
 }
