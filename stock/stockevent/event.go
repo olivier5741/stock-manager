@@ -6,21 +6,21 @@ import (
 )
 
 type InSubmitted struct {
-	StockEvent
-	In, Stock items.I
+	StockEvt
+	In, Stock items.Items
 }
 
 type OutSubmitted struct {
-	StockEvent
-	Out, Stock items.I
+	StockEvt
+	Out, Stock items.Items
 }
 
 type InventorySubmitted struct {
-	StockEvent
-	Inventory, Stock items.I
+	StockEvt
+	Inventory, Stock items.Items
 }
 
-type StockEvent struct {
+type StockEvt struct {
 	StockName string
 	Date      time.Time
 }

@@ -7,15 +7,15 @@ import (
 	"sort"
 )
 
-// A represents an amount which consists of several quantities
+// Amount represents an amount which consists of several quantities
 // in the same system
-type A struct {
-	quants map[string]quant.Q
+type Amount struct {
+	quants map[string]quant.Quant
 }
 
 // String returns a comma seperated list of quantities
 // sorted by descending factor
-func (am A) String() string {
+func (am Amount) String() string {
 	var s string
 	for _, u := range am.QuantsByFactDesc() {
 		s += u.String() + ", "
@@ -24,38 +24,38 @@ func (am A) String() string {
 }
 
 // NewA creates a new amount based on qs quantities
-func NewA(qs ...quant.Q) A {
-	list := make(map[string]quant.Q, 0)
+func NewAmount(qs ...quant.Quant) Amount {
+	list := make(map[string]quant.Quant, 0)
 	for _, q := range qs {
 		list[q.ID()] = q
 	}
-	return A{list}
+	return Amount{list}
 }
 
 // Empty creates a new amount based on am
 // with all quantities value set to 0
-func (am A) Empty() A {
-	list := make(map[string]quant.Q, 0)
+func (am Amount) Empty() Amount {
+	list := make(map[string]quant.Quant, 0)
 	for k, q := range am.quants {
 		list[k] = q.NewSet(0)
 	}
-	return A{list}
+	return Amount{list}
 }
 
 // Neg creates a new amount based on am
 // with all quantities value as the opposite
 // of the
-func (am A) Neg() A {
-	list := make(map[string]quant.Q, 0)
+func (am Amount) Neg() Amount {
+	list := make(map[string]quant.Quant, 0)
 	for _, q := range am.Quants() {
 		list[q.ID()] = q.NewSet(-q.Val)
 	}
-	return A{list}
+	return Amount{list}
 }
 
 // Add creates a new amount by summing each quantities
 // value of a1 and a2 and append the unmatched quantities
-func Add(a1, a2 A) A {
+func Add(a1, a2 Amount) Amount {
 	out := a1.Copy()
 	for _, q := range a2.Quants() {
 		if old, ok := out.quants[q.ID()]; ok {
@@ -68,12 +68,12 @@ func Add(a1, a2 A) A {
 
 // Sub creates a new amount by subtracting a2 from a1
 // TODO : more explanation
-func Sub(a1, a2 A) A {
+func Sub(a1, a2 Amount) Amount {
 	out := a1.Copy()
 	out = valByValSub(out, a2.quantsWithout())
 	for _, q := range a2.QuantsWithByFactAsc() {
 		if old, ok := out.quants[q.ID()]; !ok {
-			out.quants[q.ID()] = quant.Q{q.Unit, -q.Val}
+			out.quants[q.ID()] = quant.Quant{q.Unit, -q.Val}
 		} else {
 			if old.Val >= q.Val || q.Val > out.TotalWith() {
 				out.quants[q.ID()] = quant.Sub(old, q)
@@ -103,7 +103,7 @@ func Sub(a1, a2 A) A {
 				missing -= tosub * n.Fact
 			}
 			if missing > 0 {
-				valByValSub(out, map[string]quant.Q{q.ID(): {q.Unit, missing}})
+				valByValSub(out, map[string]quant.Quant{q.ID(): {q.Unit, missing}})
 			}
 
 		}
@@ -116,7 +116,7 @@ func Sub(a1, a2 A) A {
 // and also returns if this amount as a single quantity and the value
 // of this quantity
 // TODO  Perhaps delete noWithout
-func Diff(a1, a2 A) (out A, noWithout bool, diff int) {
+func Diff(a1, a2 Amount) (out Amount, noWithout bool, diff int) {
 	out = Sub(a1, a2).Redistribute()
 	noWithout = len(out.quantsWithout()) == 0
 	diff = out.TotalWith()
@@ -126,9 +126,9 @@ func Diff(a1, a2 A) (out A, noWithout bool, diff int) {
 // Redistribute creates an amount by redistributing
 // parts of possible quantities values of am
 // to a quantity with a higher factor
-func (am A) Redistribute() A {
+func (am Amount) Redistribute() Amount {
 	list := am.quantsWithout()
-	var lasts []quant.Q
+	var lasts []quant.Quant
 	left := 0
 	for _, q := range am.QuantsWithByFactDesc() {
 		list[q.ID()] = q.Empty()
@@ -139,14 +139,14 @@ func (am A) Redistribute() A {
 			left = left % l.Fact
 		}
 	}
-	return A{list}
+	return Amount{list}
 }
 
 // Total creates an amount by redistributing all the quatities values
 // to the quantity with the smallest factor (0 factor means no factor so
 // it is not taken into account)
-func (am A) Total() A {
-	out := A{am.quantsWithout()}
+func (am Amount) Total() Amount {
+	out := Amount{am.quantsWithout()}
 	with := am.QuantsWithByFactDesc()
 	t := 0
 	for _, q := range with {
@@ -161,16 +161,16 @@ func (am A) Total() A {
 }
 
 // TotalWithRound returns TODO
-func (am A) TotalWithRound(u quant.Unit) quant.QFloat {
+func (am Amount) TotalWithRound(u quant.Unit) quant.QuantFloat {
 	t := 0.0
 	for _, q := range am.quantsWith() {
 		t += float64(q.Total()) / float64(u.Fact)
 	}
-	return quant.QFloat{u, t}
+	return quant.QuantFloat{u, t}
 }
 
 // TotalWith returns TODO
-func (am A) TotalWith() int {
+func (am Amount) TotalWith() int {
 	var t int
 	for _, q := range am.quantsWith() {
 		t += q.Total()
@@ -179,43 +179,43 @@ func (am A) TotalWith() int {
 }
 
 // Copy creates a new amount based on am
-func (am A) Copy() A {
-	return NewA(am.Quants()...)
+func (am Amount) Copy() Amount {
+	return NewAmount(am.Quants()...)
 }
 
-func (am A) quantsWithout() map[string]quant.Q {
+func (am Amount) quantsWithout() map[string]quant.Quant {
 	_, out := am.valsFactFilter()
 	return out
 }
 
-func (am A) quantsWith() map[string]quant.Q {
+func (am Amount) quantsWith() map[string]quant.Quant {
 	out, _ := am.valsFactFilter()
 	return out
 }
 
-func (am A) QuantsWithByFactAsc() []quant.Q {
-	return A{quants: am.quantsWith()}.QuantsByFactAsc()
+func (am Amount) QuantsWithByFactAsc() []quant.Quant {
+	return Amount{quants: am.quantsWith()}.QuantsByFactAsc()
 }
 
-func (am A) QuantsWithByFactDesc() []quant.Q {
-	return A{quants: am.quantsWith()}.QuantsByFactDesc()
+func (am Amount) QuantsWithByFactDesc() []quant.Quant {
+	return Amount{quants: am.quantsWith()}.QuantsByFactDesc()
 }
 
-func valByValSub(am A, qs map[string]quant.Q) A {
+func valByValSub(am Amount, qs map[string]quant.Quant) Amount {
 	out := am.Copy()
 	for _, q := range qs {
 		if old, ok := out.quants[q.ID()]; ok {
 			out.quants[q.ID()] = quant.Sub(old, q)
 		} else {
-			out.quants[q.ID()] = quant.Q{q.Unit, -q.Val}
+			out.quants[q.ID()] = quant.Quant{q.Unit, -q.Val}
 		}
 	}
 	return out
 }
 
-func (am A) valsFactFilter() (with, without map[string]quant.Q) {
-	with = make(map[string]quant.Q, 0)
-	without = make(map[string]quant.Q, 0)
+func (am Amount) valsFactFilter() (with, without map[string]quant.Quant) {
+	with = make(map[string]quant.Quant, 0)
+	without = make(map[string]quant.Quant, 0)
 	for _, q := range am.quants {
 		if q.Fact != 0 {
 			with[q.ID()] = q
@@ -227,8 +227,8 @@ func (am A) valsFactFilter() (with, without map[string]quant.Q) {
 }
 
 // Quants returns the quantities of a
-func (am A) Quants() []quant.Q {
-	var out []quant.Q
+func (am Amount) Quants() []quant.Quant {
+	var out []quant.Quant
 	for _, val := range am.quants {
 		out = append(out, val)
 	}
@@ -236,8 +236,8 @@ func (am A) Quants() []quant.Q {
 }
 
 // QuantsMap return the quantities of a in a map
-func (am A) QuantsMap() map[string]quant.Q {
-	out := make(map[string]quant.Q)
+func (am Amount) QuantsMap() map[string]quant.Quant {
+	out := make(map[string]quant.Quant)
 	for _, val := range am.quants {
 		out[val.Unit.ID()] = val
 	}
@@ -245,14 +245,14 @@ func (am A) QuantsMap() map[string]quant.Q {
 }
 
 // QuantsByFactDesc returns the quantities of am by descending factor
-func (am A) QuantsByFactDesc() []quant.Q {
+func (am Amount) QuantsByFactDesc() []quant.Quant {
 	out := am.Quants()
 	sort.Sort(quant.ByFactDesc(out))
 	return out
 }
 
 // QuantsByFactAsc returns the quantities of am by ascending factor
-func (am A) QuantsByFactAsc() []quant.Q {
+func (am Amount) QuantsByFactAsc() []quant.Quant {
 	out := am.Quants()
 	sort.Sort(quant.ByFactAsc(out))
 	return out

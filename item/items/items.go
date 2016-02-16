@@ -8,12 +8,12 @@ import (
 	"strconv"
 )
 
-// T a list of items
-type I map[string]item.I
+// Items a list of items
+type Items map[string]item.Item
 
 // Add creates a list by adding value of each matching item
 // and then apprend the non-matching one
-func Add(ins, adds I) I {
+func Add(ins, adds Items) Items {
 	its := ins.Copy()
 	for key, add := range adds {
 		if it, ok := its[key]; ok {
@@ -27,7 +27,7 @@ func Add(ins, adds I) I {
 // Sub creates a list by subtracting value from right item
 // to matching left item, append the non-matching left items
 // and append the negative of the right non-matching items
-func Sub(ins, subs I) I {
+func Sub(ins, subs Items) Items {
 	its := ins.Copy()
 	for key, sub := range subs {
 		if it, ok := its[key]; ok {
@@ -44,32 +44,32 @@ func Sub(ins, subs I) I {
 // the right list : non-existant items from the left list and
 // the difference between matching items
 // if bigger than 0 or if cannot be compiled as an integer
-func Missing(its, exps I) I {
-	out := map[string]item.I{}
+func Missing(its, exps Items) Items {
+	out := map[string]item.Item{}
 	for key, exp := range exps {
 		if it, ok := its[key]; ok {
 			if diff, no, intDiff := amount.Diff(exp.Amount, it.Amount); no && intDiff > 0 {
-				out[key] = item.I{it.Prod, diff}
+				out[key] = item.Item{it.Prod, diff}
 			}
 		} else {
-			out[key] = item.I{exp.Prod, exp.Amount.Copy()}
+			out[key] = item.Item{exp.Prod, exp.Amount.Copy()}
 		}
 	}
 	return out
 }
 
 // Empty creates a list by setting the value of each item to empty
-func (its I) Empty() I {
-	out := map[string]item.I{}
+func (its Items) Empty() Items {
+	out := map[string]item.Item{}
 	for key, it := range its {
-		out[key] = item.I{it.Prod, it.Amount.Empty()}
+		out[key] = item.Item{it.Prod, it.Amount.Empty()}
 	}
 	return out
 }
 
 // Copy creates a list by copying each item
-func (its I) Copy() I {
-	out := make(I, len(its))
+func (its Items) Copy() Items {
+	out := make(Items, len(its))
 	for key, orig := range its {
 		out[key] = orig
 	}
@@ -77,7 +77,7 @@ func (its I) Copy() I {
 }
 
 // should call number of units on val ...
-func (its I) MaxUnit() int {
+func (its Items) MaxUnit() int {
 	var max int
 	for _, it := range its {
 		// TODO method for it.Val.Quants
@@ -88,7 +88,7 @@ func (its I) MaxUnit() int {
 	return max
 }
 
-func (its I) StringSlice() [][]string {
+func (its Items) StringSlice() [][]string {
 	var out [][]string
 	max := its.MaxUnit()
 	for _, it := range its {
@@ -97,15 +97,15 @@ func (its I) StringSlice() [][]string {
 	return out
 }
 
-func FromSlice(items []item.I) I {
-	out := I{}
+func FromSlice(items []item.Item) Items {
+	out := Items{}
 	for _, item := range items {
 		out[string(item.Prod)] = item
 	}
 	return out
 }
 
-func ItemsMapToStringMapTable(itsmap map[string]I) map[string]map[string]string {
+func ItemsMapToStringMapTable(itsmap map[string]Items) map[string]map[string]string {
 	out := make(map[string]map[string]string, 0)
 	for date, its := range itsmap {
 		newRow := make(map[string]string)

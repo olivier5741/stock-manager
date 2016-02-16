@@ -42,7 +42,7 @@ var (
 	loggingPrefix   = "l" + sep
 	numberPrefix    = "n"
 
-	repo  = stockCmd.MakeDummyStockRepository()
+	repo  = stockCmd.MakeDummyStockRepo()
 	endPt = stockCmd.EndPt{Db: repo}
 
 	stockRoute = func(t skelet.Ider) (ok bool, a skelet.AggAct, p skelet.EvtSrcPersister) {
@@ -168,7 +168,7 @@ func main() {
 	RouteFile(files)
 
 	stockInt, err4 := endPt.Db.Get("main")
-	iStock := stockInt.(*stock.Stock).I
+	iStock := stockInt.(*stock.Stock).Items
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
@@ -206,7 +206,7 @@ func main() {
 
 	TableView{"main", generatedPrefix + Tr("file_name_product") + extension,
 		strtab.NewTfromMap(items.ItemsMapToStringMapTable(
-			endPt.ProdValEvolution("main"))).Sort().Transpose().Sort(),
+			endPt.ProdValEvol("main"))).Sort().Transpose().Sort(),
 		prodEvolRender}.Show()
 }
 
@@ -261,16 +261,16 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
 	// should be somewhere else perhaps
 	mapper := func(ins []string, c interface{}) {
-		c.(*item.I).Prod = item.Prod(ins[0])
-		var units []quant.Q
+		c.(*item.Item).Prod = item.Prod(ins[0])
+		var units []quant.Quant
 		for i := 1; i < len(ins)-1; i = i + 2 {
 			val, _ := strconv.Atoi(ins[i])
 			log.Debug("Val")
 			log.Debug(val)
-			units = append(units, quant.Q{quant.NewUnit(ins[i+1]), val})
+			units = append(units, quant.Quant{quant.NewUnit(ins[i+1]), val})
 			log.Debug(units)
 		}
-		c.(*item.I).Amount = amount.NewA(units...)
+		c.(*item.Item).Amount = amount.NewAmount(units...)
 	}
 
 	// should put this in a local type
@@ -286,10 +286,10 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		Tr("csv_header_item_unit", 4),
 	}
 
-	var its []item.I
-	newLiner := func() interface{} { return new(item.I) }
+	var its []item.Item
+	newLiner := func() interface{} { return new(item.Item) }
 	appender := func(v interface{}) {
-		a := v.(*item.I)
+		a := v.(*item.Item)
 		its = append(its, *a)
 	}
 

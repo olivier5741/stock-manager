@@ -15,24 +15,24 @@ import (
 var (
 	AspK  = "aspirine"
 	Asp   = item.Prod(AspK)
-	Asp1  = item.I{Asp, amount.NewA(quant.Q{itemT.Pillule, 1})}
-	Asp5  = item.I{Asp, amount.NewA(quant.Q{itemT.Pillule, 5})}
-	Asp6  = item.I{Asp, amount.NewA(quant.Q{itemT.Pillule, 6})}
-	Asp8  = item.I{Asp, amount.NewA(quant.Q{itemT.Pillule, 8})}
-	Asp15 = item.I{Asp, amount.NewA(quant.Q{itemT.Pillule, 15})}
-	Asp20 = item.I{Asp, amount.NewA(quant.Q{itemT.Pillule, 20})}
+	Asp1  = item.Item{Asp, amount.NewAmount(quant.Quant{itemT.Pillule, 1})}
+	Asp5  = item.Item{Asp, amount.NewAmount(quant.Quant{itemT.Pillule, 5})}
+	Asp6  = item.Item{Asp, amount.NewAmount(quant.Quant{itemT.Pillule, 6})}
+	Asp8  = item.Item{Asp, amount.NewAmount(quant.Quant{itemT.Pillule, 8})}
+	Asp15 = item.Item{Asp, amount.NewAmount(quant.Quant{itemT.Pillule, 15})}
+	Asp20 = item.Item{Asp, amount.NewAmount(quant.Quant{itemT.Pillule, 20})}
 	IsoK  = "isobétadine"
 	Iso   = item.Prod(IsoK)
-	Iso0  = item.I{Iso, amount.NewA(quant.Q{itemT.Pillule, 0})}
-	Iso1  = item.I{Iso, amount.NewA(quant.Q{itemT.Pillule, 1})}
-	Iso2  = item.I{Iso, amount.NewA(quant.Q{itemT.Pillule, 2})}
-	Iso3  = item.I{Iso, amount.NewA(quant.Q{itemT.Pillule, 3})}
-	Iso4  = item.I{Iso, amount.NewA(quant.Q{itemT.Pillule, 4})}
-	Iso7  = item.I{Iso, amount.NewA(quant.Q{itemT.Pillule, 7})}
-	Iso10 = item.I{Iso, amount.NewA(quant.Q{itemT.Pillule, 10})}
-	Iso20 = item.I{Iso, amount.NewA(quant.Q{itemT.Pillule, 20})}
+	Iso0  = item.Item{Iso, amount.NewAmount(quant.Quant{itemT.Pillule, 0})}
+	Iso1  = item.Item{Iso, amount.NewAmount(quant.Quant{itemT.Pillule, 1})}
+	Iso2  = item.Item{Iso, amount.NewAmount(quant.Quant{itemT.Pillule, 2})}
+	Iso3  = item.Item{Iso, amount.NewAmount(quant.Quant{itemT.Pillule, 3})}
+	Iso4  = item.Item{Iso, amount.NewAmount(quant.Quant{itemT.Pillule, 4})}
+	Iso7  = item.Item{Iso, amount.NewAmount(quant.Quant{itemT.Pillule, 7})}
+	Iso10 = item.Item{Iso, amount.NewAmount(quant.Quant{itemT.Pillule, 10})}
+	Iso20 = item.Item{Iso, amount.NewAmount(quant.Quant{itemT.Pillule, 20})}
 
-	repo       = stockCmd.MakeDummyStockRepository()
+	repo       = stockCmd.MakeDummyStockRepo()
 	e          = stockCmd.EndPt{Db: repo}
 	stockRoute = func(t skelet.Ider) (ok bool, a skelet.AggAct, p skelet.EvtSrcPersister) {
 		switch t.(type) {
@@ -48,7 +48,7 @@ var (
 	}
 )
 
-func CheckItemsValueAndExistence(t *testing.T, gots items.I, exps items.I, name string) {
+func CheckItemsValueAndExistence(t *testing.T, gots items.Items, exps items.Items, name string) {
 	for _, exp := range exps {
 		got, ok := gots[string(exp.Prod)]
 		if !ok {

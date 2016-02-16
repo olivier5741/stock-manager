@@ -7,11 +7,11 @@ import (
 
 type Stock struct {
 	Name string
-	items.I
+	items.Items
 }
 
 func MakeStock(name string) skelet.Ider {
-	return &Stock{name, items.I{}}
+	return &Stock{name, items.Items{}}
 }
 
 func (s Stock) ID() string {
@@ -23,11 +23,11 @@ func FromActions(acts []interface{}, id string) skelet.Ider {
 	for _, act := range acts {
 		switch act := act.(type) {
 		case In:
-			s.I = items.Add(s.I, act.I)
+			s.Items = items.Add(s.Items, act.Items)
 		case Out:
-			s.I = items.Sub(s.I, act.I)
+			s.Items = items.Sub(s.Items, act.Items)
 		case Inventory:
-			s.I = act.I.Copy()
+			s.Items = act.Items.Copy()
 		case Rename:
 			s.Name = act.Name
 		}
@@ -36,20 +36,20 @@ func FromActions(acts []interface{}, id string) skelet.Ider {
 }
 
 func (s *Stock) SubmitIn(i InCmd) (e In, err error) {
-	s.I = items.Add(s.I, i.I)
-	e = In{i.I}
+	s.Items = items.Add(s.Items, i.Items)
+	e = In{i.Items}
 	return
 }
 
 func (s *Stock) SubmitOut(o OutCmd) (e Out, err error) {
-	s.I = items.Sub(s.I, o.I)
-	e = Out{o.I}
+	s.Items = items.Sub(s.Items, o.Items)
+	e = Out{o.Items}
 	return
 }
 
 func (s *Stock) SubmitInventory(i InventoryCmd) (e Inventory, err error) {
-	s.I = i.I
-	e = Inventory{i.I}
+	s.Items = i.Items
+	e = Inventory{i.Items}
 	return
 }
 
@@ -58,7 +58,6 @@ func (s *Stock) RenameStock(r RenameCmd) (e Rename, err error) {
 	e = Rename{r.Name}
 	return
 }
-
 
 type InCmd ItemsCmd
 type OutCmd ItemsCmd
@@ -69,7 +68,7 @@ type RenameCmd struct {
 
 type ItemsCmd struct {
 	StockName string
-	items.I
+	items.Items
 	Date string
 }
 
@@ -90,10 +89,10 @@ type Rename struct {
 	Name string
 }
 
-type In ItemsAction
-type Out ItemsAction
-type Inventory ItemsAction
+type In ItemsAct
+type Out ItemsAct
+type Inventory ItemsAct
 
-type ItemsAction struct {
-	items.I
+type ItemsAct struct {
+	items.Items
 }

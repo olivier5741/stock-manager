@@ -14,17 +14,17 @@ func TestMain(t *testing.T) {
 	// It could be interesting to retain 'Route' in some kind of object
 
 	cmd1 := skelet.Cmd{
-		T:     stock.InCmd{"Carlsbourg", items.I{IsoK: Iso4}, "2016-01-27"},
+		T:     stock.InCmd{"Carlsbourg", items.Items{IsoK: Iso4}, "2016-01-27"},
 		Route: stockRoute,
 	}
 
 	cmd2 := skelet.Cmd{
-		T:     stock.OutCmd{"Carlsbourg", items.I{IsoK: Iso1}, "2016-01-28"},
+		T:     stock.OutCmd{"Carlsbourg", items.Items{IsoK: Iso1}, "2016-01-28"},
 		Route: stockRoute,
 	}
 
 	cmd3 := skelet.Cmd{
-		T:     stock.InventoryCmd{"Carlsbourg", items.I{IsoK: Iso2}, "2016-01-29"},
+		T:     stock.InventoryCmd{"Carlsbourg", items.Items{IsoK: Iso2}, "2016-01-29"},
 		Route: stockRoute,
 	}
 
@@ -40,7 +40,7 @@ func TestMain(t *testing.T) {
 
 	s := c.(*stock.Stock)
 
-	exps := map[string]item.I{IsoK: Iso2}
+	exps := map[string]item.Item{IsoK: Iso2}
 
-	CheckItemsValueAndExistence(t, s.I, exps, "stock")
+	CheckItemsValueAndExistence(t, s.Items, exps, "stock")
 }

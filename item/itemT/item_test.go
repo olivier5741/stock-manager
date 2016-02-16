@@ -7,7 +7,7 @@ import (
 )
 
 func TestAddVal(t *testing.T) {
-	v1 := amount.NewA([]quant.Q{
+	v1 := amount.NewAmount([]quant.Quant{
 		{Pillule, 12},
 		{Tablette, 2},
 		{Boite, 2},
@@ -16,7 +16,7 @@ func TestAddVal(t *testing.T) {
 
 	t.Log(v1.String())
 
-	v2 := amount.NewA([]quant.Q{
+	v2 := amount.NewAmount([]quant.Quant{
 		{Tablette, 3},
 		{Boite, 2},
 	}...)
@@ -28,7 +28,7 @@ func TestAddVal(t *testing.T) {
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Carton))
 
-	exp := amount.NewA([]quant.Q{
+	exp := amount.NewAmount([]quant.Quant{
 		{Pillule, 12},
 		{Tablette, 5},
 		{Boite, 4},
@@ -39,7 +39,7 @@ func TestAddVal(t *testing.T) {
 }
 
 func TestSub(t *testing.T) {
-	v1 := amount.NewA([]quant.Q{
+	v1 := amount.NewAmount([]quant.Quant{
 		{Pillule, 12},
 		{Tablette, 2},
 		{Boite, 2},
@@ -48,7 +48,7 @@ func TestSub(t *testing.T) {
 
 	t.Log(v1.String())
 
-	v2 := amount.NewA([]quant.Q{
+	v2 := amount.NewAmount([]quant.Quant{
 		{Pillule, 16},
 		{Tablette, 3},
 		{Boite, 2},
@@ -61,7 +61,7 @@ func TestSub(t *testing.T) {
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Carton))
 
-	exp := amount.NewA([]quant.Q{
+	exp := amount.NewAmount([]quant.Quant{
 		{Pillule, 11},
 		{Tablette, 1},
 		{Boite, 9},
@@ -72,7 +72,7 @@ func TestSub(t *testing.T) {
 }
 
 func TestDiff(t *testing.T) {
-	v1 := amount.NewA([]quant.Q{
+	v1 := amount.NewAmount([]quant.Quant{
 		{Pillule, 12},
 		{Tablette, 40},
 		{Boite, 2},
@@ -81,7 +81,7 @@ func TestDiff(t *testing.T) {
 
 	t.Log(v1.String())
 
-	v2 := amount.NewA([]quant.Q{
+	v2 := amount.NewAmount([]quant.Quant{
 		{Pillule, 16},
 		{Tablette, 3},
 		{Boite, 2},
@@ -94,7 +94,7 @@ func TestDiff(t *testing.T) {
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Carton))
 
-	exp := amount.NewA([]quant.Q{
+	exp := amount.NewAmount([]quant.Quant{
 		{Carton, 2},
 		{Boite, 2},
 		{Tablette, 0},
@@ -107,7 +107,7 @@ func TestDiff(t *testing.T) {
 func TestRedistribute(t *testing.T) {
 	// l'unité principale ne peut valoir 0
 
-	v1 := amount.NewA([]quant.Q{
+	v1 := amount.NewAmount([]quant.Quant{
 		{Pillule, 50},
 		{Tablette, 3},
 		{Boite, 2},
@@ -120,7 +120,7 @@ func TestRedistribute(t *testing.T) {
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Boite))
 
-	exp := amount.NewA([]quant.Q{
+	exp := amount.NewAmount([]quant.Quant{
 		{Pillule, 5},
 		{Tablette, 0},
 		{Boite, 4},
@@ -130,7 +130,7 @@ func TestRedistribute(t *testing.T) {
 }
 
 func TestTotal(t *testing.T) {
-	v1 := amount.NewA([]quant.Q{
+	v1 := amount.NewAmount([]quant.Quant{
 		{Inconnu, 21},
 		{Pillule, 50},
 		{Tablette, 3},
@@ -144,7 +144,7 @@ func TestTotal(t *testing.T) {
 	t.Log(got.String())
 	t.Log(got.TotalWithRound(Boite))
 
-	exp := amount.NewA([]quant.Q{
+	exp := amount.NewAmount([]quant.Quant{
 		{Inconnu, 21},
 		{Pillule, 185},
 	}...)

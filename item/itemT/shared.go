@@ -14,7 +14,7 @@ var (
 	Carton   = quant.Unit{"cart.", 450}
 )
 
-func ValEqualCheck(t *testing.T, gots, exps amount.A) {
+func ValEqualCheck(t *testing.T, gots, exps amount.Amount) {
 
 	for key, got := range gots.QuantsMap() {
 		if exp, ok := exps.QuantsMap()[key]; !ok {
@@ -32,7 +32,7 @@ func ValEqualCheck(t *testing.T, gots, exps amount.A) {
 
 }
 
-func UnitValCheck(t *testing.T, got, exp quant.Q) {
+func UnitValCheck(t *testing.T, got, exp quant.Quant) {
 	if got.Fact != exp.Fact {
 		t.Errorf("Fact %+v of unit %+v is not the same as expected %+v (unit %+v)", got.Fact, got, exp.Fact, exp)
 	}

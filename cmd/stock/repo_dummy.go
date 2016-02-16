@@ -5,11 +5,11 @@ import (
 	"github.com/olivier5741/stock-manager/stock"
 )
 
-type DummyStockRepository struct {
+type DummyStockRepo struct {
 	skelet.DumEvtRepo
 }
 
-func MakeDummyStockRepository() *DummyStockRepository {
-	d := DummyStockRepository{*skelet.MakeDumEvtRepo(stock.MakeStock, stock.FromActions)}
+func MakeDummyStockRepo() *DummyStockRepo {
+	d := DummyStockRepo{*skelet.MakeDumEvtRepo(stock.MakeStock, stock.FromActions)}
 	return &d
 }

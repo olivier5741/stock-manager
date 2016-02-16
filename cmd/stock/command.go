@@ -17,8 +17,8 @@ func (endPt *EndPt) HandleIn(agg interface{}, cmd interface{}) (event skelet.Eve
 	}
 
 	return skelet.Event{cmdIn.Date, in}, stockevent.InSubmitted{
-		stockevent.StockEvent{s.Name, time.Now()},
-		in.I, s.I}, nil
+		stockevent.StockEvt{s.Name, time.Now()},
+		in.Items, s.Items}, nil
 }
 
 func (endPt *EndPt) HandleOut(agg interface{}, cmd interface{}) (event skelet.Event, extEvent interface{}, err error) {
@@ -31,8 +31,8 @@ func (endPt *EndPt) HandleOut(agg interface{}, cmd interface{}) (event skelet.Ev
 	}
 
 	return skelet.Event{cmdOut.Date, out}, stockevent.OutSubmitted{
-		stockevent.StockEvent{s.Name, time.Now()},
-		s.I, s.I}, nil
+		stockevent.StockEvt{s.Name, time.Now()},
+		s.Items, s.Items}, nil
 }
 
 func (endPt *EndPt) HandleInventory(agg interface{}, cmd interface{}) (event skelet.Event, extEvent interface{}, err error) {
@@ -45,6 +45,6 @@ func (endPt *EndPt) HandleInventory(agg interface{}, cmd interface{}) (event ske
 	}
 
 	return skelet.Event{cmdInv.Date, inv}, stockevent.InventorySubmitted{
-		stockevent.StockEvent{s.Name, time.Now()},
-		inv.I, s.I}, nil
+		stockevent.StockEvt{s.Name, time.Now()},
+		inv.Items, s.Items}, nil
 }
