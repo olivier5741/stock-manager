@@ -3,6 +3,7 @@ package stockT
 import (
 	stockCmd "github.com/olivier5741/stock-manager/cmd/stock"
 	"github.com/olivier5741/stock-manager/item/items"
+	"github.com/olivier5741/stock-manager/item"
 	sk "github.com/olivier5741/stock-manager/skelet"
 	stock "github.com/olivier5741/stock-manager/stock/main"
 	stockSk "github.com/olivier5741/stock-manager/stock/skelet"
@@ -40,7 +41,7 @@ func TestMain(t *testing.T) {
 
 	s := c.(*stock.Stock)
 
-	exps := map[string]items.Item{IsoK: Iso2}
+	exps := map[string]item.Item{IsoK: Iso2}
 
 	CheckItemsValueAndExistence(t, s.T, exps, "stock")
 }

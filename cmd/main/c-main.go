@@ -16,6 +16,7 @@ import (
 	"github.com/nicksnyder/go-i18n/i18n"
 	"github.com/olivier5741/stock-manager/cmd/stock"
 	"github.com/olivier5741/stock-manager/item/items"
+	"github.com/olivier5741/stock-manager/item"
 	"github.com/olivier5741/stock-manager/item/quant"
 	"github.com/olivier5741/stock-manager/item/amount"
 	"github.com/olivier5741/stock-manager/skelet"
@@ -261,7 +262,7 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 
 	// should be somewhere else perhaps
 	mapper := func(ins []string, c interface{}) {
-		c.(*items.Item).Prod = items.Prod(ins[0])
+		c.(*item.Item).Prod = item.Prod(ins[0])
 		var units []quant.Q
 		for i := 1; i < len(ins)-1; i = i + 2 {
 			val, _ := strconv.Atoi(ins[i])
@@ -270,7 +271,7 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 			units = append(units, quant.Q{quant.NewUnit(ins[i+1]), val})
 			log.Debug(units)
 		}
-		c.(*items.Item).Amount = amount.NewA(units...)
+		c.(*item.Item).Amount = amount.NewA(units...)
 	}
 
 	// should put this in a local type
@@ -286,10 +287,10 @@ func UnmarshalCsvFile(path Filename) (out skelet.Ider, err error) {
 		Tr("csv_header_item_unit", 4),
 	}
 
-	var its []items.Item
-	newLiner := func() interface{} { return new(items.Item) }
+	var its []item.Item
+	newLiner := func() interface{} { return new(item.Item) }
 	appender := func(v interface{}) {
-		a := v.(*items.Item)
+		a := v.(*item.Item)
 		its = append(its, *a)
 	}
 

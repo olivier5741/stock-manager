@@ -4,6 +4,7 @@ import (
 	stockCmd "github.com/olivier5741/stock-manager/cmd/stock"
 	"github.com/olivier5741/stock-manager/item/itemT"
 	"github.com/olivier5741/stock-manager/item/items"
+	"github.com/olivier5741/stock-manager/item"
 	"github.com/olivier5741/stock-manager/item/quant"
 	"github.com/olivier5741/stock-manager/item/amount"
 	sk "github.com/olivier5741/stock-manager/skelet"
@@ -13,23 +14,23 @@ import (
 
 var (
 	AspK  = "aspirine"
-	Asp   = items.Prod(AspK)
-	Asp1  = items.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 1})}
-	Asp5  = items.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 5})}
-	Asp6  = items.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 6})}
-	Asp8  = items.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 8})}
-	Asp15 = items.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 15})}
-	Asp20 = items.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 20})}
+	Asp   = item.Prod(AspK)
+	Asp1  = item.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 1})}
+	Asp5  = item.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 5})}
+	Asp6  = item.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 6})}
+	Asp8  = item.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 8})}
+	Asp15 = item.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 15})}
+	Asp20 = item.Item{Asp, amount.NewA(quant.Q{itemT.Pillule, 20})}
 	IsoK  = "isobétadine"
-	Iso   = items.Prod(IsoK)
-	Iso0  = items.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 0})}
-	Iso1  = items.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 1})}
-	Iso2  = items.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 2})}
-	Iso3  = items.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 3})}
-	Iso4  = items.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 4})}
-	Iso7  = items.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 7})}
-	Iso10 = items.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 10})}
-	Iso20 = items.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 20})}
+	Iso   = item.Prod(IsoK)
+	Iso0  = item.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 0})}
+	Iso1  = item.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 1})}
+	Iso2  = item.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 2})}
+	Iso3  = item.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 3})}
+	Iso4  = item.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 4})}
+	Iso7  = item.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 7})}
+	Iso10 = item.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 10})}
+	Iso20 = item.Item{Iso, amount.NewA(quant.Q{itemT.Pillule, 20})}
 
 	repo       = stockCmd.MakeDummyStockRepository()
 	e          = stockCmd.EndPt{Db: repo}

@@ -4,30 +4,12 @@ package items
 
 import (
 	"github.com/olivier5741/stock-manager/item/amount"
+	"github.com/olivier5741/stock-manager/item"
 	"strconv"
 )
 
 // T a list of items
-type T map[string]Item
-
-// Item with related product and the value
-type Item struct {
-	Prod   Prod
-	Amount amount.A
-}
-
-// String print the product and value of the item
-func (it Item) String() string {
-	return it.Prod.String() + ": " + it.Amount.String()
-}
-
-// Prod the (item) product
-type Prod string
-
-// String print the product
-func (p Prod) String() string {
-	return string(p)
-}
+type T map[string]item.Item
 
 // Add creates a list by adding value of each matching item
 // and then apprend the non-matching one
@@ -63,14 +45,14 @@ func Sub(ins, subs T) T {
 // the difference between matching items
 // if bigger than 0 or if cannot be compiled as an integer
 func Missing(its, exps T) T {
-	out := map[string]Item{}
+	out := map[string]item.Item{}
 	for key, exp := range exps {
 		if it, ok := its[key]; ok {
 			if diff, no, intDiff := amount.Diff(exp.Amount, it.Amount); no && intDiff > 0 {
-				out[key] = Item{it.Prod, diff}
+				out[key] = item.Item{it.Prod, diff}
 			}
 		} else {
-			out[key] = Item{exp.Prod, exp.Amount.Copy()}
+			out[key] = item.Item{exp.Prod, exp.Amount.Copy()}
 		}
 	}
 	return out
@@ -78,9 +60,9 @@ func Missing(its, exps T) T {
 
 // Empty creates a list by setting the value of each item to empty
 func (its T) Empty() T {
-	out := map[string]Item{}
+	out := map[string]item.Item{}
 	for key, it := range its {
-		out[key] = Item{it.Prod, it.Amount.Empty()}
+		out[key] = item.Item{it.Prod, it.Amount.Empty()}
 	}
 	return out
 }
@@ -115,28 +97,12 @@ func (its T) StringSlice() [][]string {
 	return out
 }
 
-func FromSlice(items []Item) T {
+func FromSlice(items []item.Item) T {
 	out := T{}
 	for _, item := range items {
 		out[string(item.Prod)] = item
 	}
 	return out
-}
-
-// remove limit to somewhere else ...
-func (it Item) StringSlice(unitNb int) []string {
-	s := make([]string, unitNb*2+1)
-	s[0] = it.Prod.String()
-	count := 1
-	for _, u := range it.Amount.ValsWithByFactDesc() {
-		if count == unitNb*2+1 {
-			break
-		}
-		s[count] = strconv.Itoa(u.Val)
-		s[count+1] = u.Unit.String()
-		count += 2
-	}
-	return s
 }
 
 func ItemsMapToStringMapTable(itsmap map[string]T) map[string]map[string]string {
