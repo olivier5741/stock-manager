@@ -5,6 +5,7 @@ package amount
 import (
 	"github.com/olivier5741/stock-manager/item/quant"
 	"sort"
+	"strconv"
 )
 
 // Amount represents an amount which consists of several quantities
@@ -30,6 +31,16 @@ func NewAmount(qs ...quant.Quant) Amount {
 		list[q.ID()] = q
 	}
 	return Amount{list}
+}
+
+func FromStringSlice(l []string) Amount {
+	// could put this in quant ...
+	var quants []quant.Quant
+	for i := 0; i < len(l); i = i + 2 {
+		val, _ := strconv.Atoi(l[i])
+		quants = append(quants, quant.Quant{quant.NewUnit(l[i+1]), val})
+	}
+	return NewAmount(quants...)
 }
 
 // Empty creates a new amount based on am

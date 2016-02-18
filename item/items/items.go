@@ -105,6 +105,15 @@ func FromSlice(items []item.Item) Items {
 	return out
 }
 
+func FromStringTable(t [][]string) Items {
+	out := Items{}
+	for _, row := range t {
+		item := item.FromStringSlice(row)
+		out[string(item.Prod)] = item
+	}
+	return out
+}
+
 func ItemsMapToStringMapTable(itsmap map[string]Items) map[string]map[string]string {
 	out := make(map[string]map[string]string, 0)
 	for date, its := range itsmap {

@@ -11,6 +11,10 @@ type Item struct {
 	Amount amount.Amount
 }
 
+func FromStringSlice(l []string) Item {
+	return Item{Prod(l[0]),amount.FromStringSlice(l[1:])}
+}
+
 // String print the product and value of the item
 func (it Item) String() string {
 	return it.Prod.String() + ": " + it.Amount.String()
