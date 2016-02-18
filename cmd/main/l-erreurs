@@ -1,3 +1,0 @@
-{"err":"filename_csv_suffix_error%!(EXTRA string=2016-01-28-n1-entree.csv)","filename":"2016-01-28-n1-entree.csv","level":"error","msg":"Ce nom de fichier ne peut être traité","time":"2016-02-18T11:25:15+01:00"}
-{"err":"filename_csv_suffix_error%!(EXTRA string=2016-01-28-n2-entree.csv)","filename":"2016-01-28-n2-entree.csv","level":"error","msg":"Ce nom de fichier ne peut être traité","time":"2016-02-18T11:25:15+01:00"}
-{"err":"filename_csv_suffix_error%!(EXTRA string=2016-01-29-n1-sortie.csv)","filename":"2016-01-29-n1-sortie.csv","level":"error","msg":"Ce nom de fichier ne peut être traité","time":"2016-02-18T11:25:15+01:00"}

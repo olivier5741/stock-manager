@@ -13,8 +13,8 @@ WIN_EXE_PATH = $(addsuffix .exe, ${EXE_PATH})
 ZIP = $(addsuffix .zip,${APP}-${VERSION}-windows-386 )
 ZIP_PATH = ${REL_DIR}/${ZIP}
 TRANS = *.all.yaml
-TRANS_PATH = tr/${TRANS}
-TRANS_DIR = ${REL_DIR}/tr
+TRANS_PATH = ${MAIN_DIR}/c-int/${TRANS}
+TRANS_DIR = ${REL_DIR}/c-int
 
 rm-app : ${ZIP_PATH}
 	cd ${REL_DIR} && \
@@ -38,7 +38,7 @@ run-app : ${EXE_PATH} ${REL_DIR} ${TRANS_DIR}
 	cp cmd/main/2016-02-18-n2-sortie.csv ${REL_DIR} && \
 	cp cmd/main/2016-02-18-n1-entree.csv ${REL_DIR} && \
 	cp cmd/main/2016-02-18-n3-entree.csv ${REL_DIR} && \
-	cp ${TRANS_PATH} release/tr && \
+	cp ${TRANS_PATH} release/c-int && \
 	cd ${REL_DIR} && \
 	./${EXE} && \
 	rm ${EXE}

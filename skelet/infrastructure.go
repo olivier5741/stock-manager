@@ -3,7 +3,8 @@ package skelet
 import (
 	"fmt"
 	// TODO : replace with Campion [golang at FOSDEM] logger
-	log "github.com/Sirupsen/logrus"
+	//log "github.com/Sirupsen/logrus"
+	//"log"
 )
 
 type EvtSrcPersister interface {
@@ -43,10 +44,11 @@ func ExecuteCommand(cmd Cmd, chain []func(cmd Cmd) Cmd) {
 
 func Error(cmd Cmd) Cmd {
 	if cmd.Err != nil {
-		log.WithFields(log.Fields{
-			"err": cmd.Err,
-			"cmd": cmd,
-		}).Panic("Error in command handling")
+		// log.WithFields(log.Fields{
+		// 	"err": cmd.Err,
+		// 	"cmd": cmd,
+		// }).Panic("Error in command handling")
+		//log.Println(cmd.Err)
 	}
 	return cmd
 }
