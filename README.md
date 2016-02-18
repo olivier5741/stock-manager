@@ -6,7 +6,7 @@
 
 Une simple gestion de stock via des fichiers .csv 
 (',' comme séparateur, uniquement des nombres entiers, pas d'accent ni de caractère spécial). 
-Le logiciel est disponible en [français](https://github.com/olivier5741/stock-manager/blob/master/cmd/main/fr-be.all.yaml) ainsi qu'en [anglais](https://github.com/olivier5741/stock-manager/blob/master/cmd/main/en-us.all.yaml).
+Le logiciel est disponible en français (par défaut) et en anglais.
 
 ## Directory Tree
 ```
@@ -26,12 +26,12 @@ stock-manager-0.2/
 ## Golang run
 ```bash
 cd cmd/main/
-go run main.go
+go run c-main.go
 ```
 
 ## Windows build
 ```bash
 cd cmd/main/
-GOOS=windows GOARCH=386 go build -o stock-manager-0.2.exe main.go
+GOOS=windows GOARCH=386 go build -o stock-manager-0.2.exe c-main.go
 ```
 

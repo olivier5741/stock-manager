@@ -86,7 +86,6 @@ func main() {
 		default:
 			log.Error(asset.Tr("no_action_for_filename_error"))
 		}
-
 		skelet.ExecuteCommand(skelet.Cmd{T: cmd, Route: stockRoute}, stockCmd.Chain)
 	}
 

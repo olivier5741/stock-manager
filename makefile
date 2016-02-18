@@ -12,9 +12,6 @@ EXE_PATH = ${REL_DIR}/${EXE}
 WIN_EXE_PATH = $(addsuffix .exe, ${EXE_PATH})
 ZIP = $(addsuffix .zip,${APP}-${VERSION}-windows-386 )
 ZIP_PATH = ${REL_DIR}/${ZIP}
-TRANS = *.all.yaml
-TRANS_PATH = ${MAIN_DIR}/c-int/${TRANS}
-TRANS_DIR = ${REL_DIR}/c-int
 
 rm-app : ${ZIP_PATH}
 	cd ${REL_DIR} && \
@@ -25,20 +22,16 @@ rm-app : ${ZIP_PATH}
 ${REL_DIR} :
 	mkdir ${REL_DIR}
 
-${TRANS_DIR} : ${REL_DIR}
-	mkdir ${TRANS_DIR}
-
 ${EXE_PATH} : ${REL_DIR}
 	go build -o ${EXE_PATH} ${MAIN_FILE}
 
 ${WIN_EXE_PATH} : ${REL_DIR}
 	GOOS=windows GOARCH=386	go build -o ${WIN_EXE_PATH} ${MAIN_FILE}
 
-run-app : ${EXE_PATH} ${REL_DIR} ${TRANS_DIR}
+run-app : ${EXE_PATH} ${REL_DIR}
 	cp cmd/main/2016-02-18-n2-sortie.csv ${REL_DIR} && \
 	cp cmd/main/2016-02-18-n1-entree.csv ${REL_DIR} && \
-	cp cmd/main/2016-02-18-n3-entree.csv ${REL_DIR} && \
-	cp ${TRANS_PATH} release/c-int && \
+	cp cmd/main/2016-02-18-n3-inventaire.csv ${REL_DIR} && \
 	cd ${REL_DIR} && \
 	./${EXE} && \
 	rm ${EXE}

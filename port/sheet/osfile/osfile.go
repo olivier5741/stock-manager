@@ -6,6 +6,7 @@ import(
 	"os"
 	"strings"
 	log "github.com/Sirupsen/logrus"
+	"github.com/olivier5741/stock-manager/asset"
 )
 
 var(
@@ -26,16 +27,15 @@ func (o OsFile) GetAll() []string {
 		log.WithFields(log.Fields{
 			"err": err,
 			"dir": o.Dir,
-		}).Error(Tr("error_dir_read"))
+		}).Error(asset.Tr("error_dir_read"))
 	}
 
 	for _, file := range files {
+
 		if !strings.HasSuffix(file.Name(), extension) {
 			continue
 		}
-		if !strings.HasSuffix(file.Name(), ".go") {
-			continue
-		}
+
 		out = append(out,strings.TrimSuffix(file.Name(),extension))
 	}
 
@@ -50,7 +50,7 @@ func (o OsFile) NewReader(name string) io.ReadCloser {
 		log.WithFields(log.Fields{
 		 	"filepath": o.Dir + name + extension,
 		 	"err":      err,
-		}).Error(Tr("error_file_open"))
+		}).Error(asset.Tr("error_file_open"))
 	}
 
 	return r
@@ -63,7 +63,7 @@ func (o OsFile) NewWriter(name string) io.WriteCloser {
 		log.WithFields(log.Fields{
 			"filepath": o.Dir + name + extension,
 			"err":      err,
-		}).Error(Tr("create_file_error"))
+		}).Error(asset.Tr("create_file_error"))
 	}
 
 	return w
