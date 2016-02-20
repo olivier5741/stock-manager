@@ -10,8 +10,10 @@ import (
 	"github.com/olivier5741/stock-manager/skelet"
 	"github.com/olivier5741/stock-manager/stock"
 	"github.com/olivier5741/stock-manager/port/sheet"
-	"github.com/olivier5741/stock-manager/port/sheet/osfile"
+//	"github.com/olivier5741/stock-manager/port/sheet/osfile"
+	"github.com/olivier5741/stock-manager/port/sheet/drivefile"
 	"github.com/olivier5741/strtab"
+	"fmt"
 )
 
 // vim -u ~/.vimrc.go
@@ -20,7 +22,11 @@ import (
 var (
 	loggingPrefix  = "l-"
 
-	files = osfile.OsFile{"./"}
+	//files = osfile.OsFile{"./"}
+	files = drivefile.DriveFile{
+		"0BzIZ3dfuz-CEN2dfQ1liU0x6eVU",
+		drivefile.GetService(),
+		make(map[string]string)}
 
 	repo  = stockCmd.MakeDummyStockRepo()
 	endPt = stockCmd.EndPt{Db: repo}
@@ -76,6 +82,8 @@ func main() {
 		its := items.FromStringTable(s.Table.GetContentWithRowHeader())
 		var cmd skelet.Ider
 
+		fmt.Println(s.Name)
+
 		switch s.Name.Act {
 		case asset.Tr("file_name_stock_in"):
 			cmd = stock.InCmd{stockId, its, s.Name.Time()}
@@ -86,6 +94,7 @@ func main() {
 		default:
 			log.Error(asset.Tr("no_action_for_filename_error"))
 		}
+		fmt.Println(cmd)
 		skelet.ExecuteCommand(skelet.Cmd{T: cmd, Route: stockRoute}, stockCmd.Chain)
 	}
 

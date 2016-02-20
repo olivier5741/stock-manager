@@ -15,21 +15,26 @@ var (
 	Tr = func(s string) string {return s}
 )
 
+type BasicFilename struct {
+	Name, UID string
+}
+
 // sample en attente-2016-02-18-n1-entree
 type Filename struct {
 	Status  string
 	Date    time.Time
 	ID, Act string
-	Basic string
+	Bypass string
+	UID string
 }
 
 func NewBasicFilename(s string) Filename {
-	return Filename{Basic: generatedPrefix + s}
+	return Filename{Bypass: generatedPrefix + s}
 }
 
-func NewFilename(s string) (Filename, error) {
+func NewFilename(s BasicFilename) (Filename, error) {
 	var status string
-	args := strings.Split(s, sep)
+	args := strings.Split(s.Name, sep)
 
 	if l := len(args); l != 5 && l != 6 {
 		return Filename{}, fmt.Errorf(asset.Tr("filename_number_argument_error"), s)
@@ -45,16 +50,16 @@ func NewFilename(s string) (Filename, error) {
 		return Filename{}, fmt.Errorf(asset.Tr("filename_date_parse_error"), s)
 	}
 
-	return Filename{status, date, strings.TrimPrefix(args[3], numberPrefix), args[4], ""}, nil
+	return Filename{status, date, strings.TrimPrefix(args[3], numberPrefix), args[4], "", s.UID}, nil
 }
 
 func NewDraftFilename(id int, act string) Filename {
-	return Filename{asset.Tr("file_prefix_draft"), time.Now(), strconv.Itoa(id), act, ""}
+	return Filename{asset.Tr("file_prefix_draft"), time.Now(), strconv.Itoa(id), act, "", ""}
 }
 
 func (f Filename) String() string {
-	if f.Basic != "" {
-		return f.Basic
+	if f.Bypass != "" {
+		return f.Bypass
 	} 
 
 	var s string
@@ -62,6 +67,10 @@ func (f Filename) String() string {
 		s = f.Status + sep + s
 	}
 	return s + f.Date.Format(timeFormat) + sep + numberPrefix + f.ID + sep + f.Act
+}
+
+func (f Filename) Basic() BasicFilename {
+	return BasicFilename{f.String(),f.UID}
 }
 
 func (f Filename) Time() string {

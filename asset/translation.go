@@ -8,6 +8,7 @@ var(
 	Tr i18n.TranslateFunc
 )
 
+// go-bindata -pkg asset .
 func init() {
 	// TO DO : find another way maybe with assets, go bind-data
 	out1, _ := Asset("en-us.all.yaml")

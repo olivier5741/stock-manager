@@ -47,7 +47,7 @@ func Error(cmd Cmd) Cmd {
 		log.WithFields(log.Fields{
 			"err": cmd.Err,
 			"cmd": cmd,
-		}).Panic("Error in command handling")
+		}).Error("Error in command handling")
 		log.Println(cmd.Err)
 	}
 	return cmd
