@@ -6,6 +6,7 @@ import (
 	"github.com/olivier5741/stock-manager/item"
 	"github.com/olivier5741/stock-manager/item/amount"
 	"strconv"
+	"fmt"
 )
 
 // Items a list of items
@@ -45,16 +46,23 @@ func Sub(ins, subs Items) Items {
 // the difference between matching items
 // if bigger than 0 or if cannot be compiled as an integer
 func Missing(its, exps Items) Items {
+	fmt.Println(its)
+	fmt.Println(exps)
 	out := map[string]item.Item{}
 	for key, exp := range exps {
 		if it, ok := its[key]; ok {
+			fmt.Println(amount.Diff(exp.Amount, it.Amount))
 			if diff, no, intDiff := amount.Diff(exp.Amount, it.Amount); no && intDiff > 0 {
-				out[key] = item.Item{it.Prod, diff}
+				out[key] = item.Item{it.Prod, diff.TotalWithRound(exp.Amount.QuantsWithByFactAsc()[0].Unit)} // TODO : could be better
+				fmt.Println("ADDED")
 			}
 		} else {
 			out[key] = item.Item{exp.Prod, exp.Amount.Copy()}
+			fmt.Println("NEW")
 		}
 	}
+	fmt.Println("OUT")
+	fmt.Println(out)
 	return out
 }
 

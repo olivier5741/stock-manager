@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"io"
+	"sort"
 	"bytes"
 	"golang.org/x/oauth2/google"
 
@@ -141,7 +142,7 @@ func (d DriveFile) GetAll() []sheet.BasicFilename {
 		out = append(out,sheet.BasicFilename{e.Name,e.Id})
 		d.Names[e.Name] = e.Id
 	}
-
+	sort.Sort(ByName(out))
 	return out
 }
 
@@ -210,3 +211,9 @@ func (b buff) Close() error {
 
 	return nil
 }
+
+type ByName []sheet.BasicFilename
+
+func (b ByName) Len() int {return len(b)}
+func (b ByName) Less(i, j int) bool {return b[i].Name < b[j].Name }
+func (b ByName) Swap(i, j int) {b[i],b[j] = b[j],b[i]}

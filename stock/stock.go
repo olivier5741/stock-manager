@@ -8,10 +8,11 @@ import (
 type Stock struct {
 	Name string
 	items.Items
+	Min items.Items
 }
 
 func MakeStock(name string) skelet.Ider {
-	return &Stock{name, items.Items{}}
+	return &Stock{name, items.Items{}, items.Items{}}
 }
 
 func (s Stock) ID() string {
@@ -28,6 +29,8 @@ func FromActions(acts []interface{}, id string) skelet.Ider {
 			s.Items = items.Sub(s.Items, act.Items)
 		case Inventory:
 			s.Items = act.Items.Copy()
+		case Minimum:
+			s.Min = act.Items.Copy()
 		case Rename:
 			s.Name = act.Name
 		}
@@ -53,6 +56,12 @@ func (s *Stock) SubmitInventory(i InventoryCmd) (e Inventory, err error) {
 	return
 }
 
+func (s *Stock) UpdateMinimum(i MinimumCmd) (e Minimum, err error) {
+	s.Min = i.Items
+	e = Minimum{i.Items}
+	return
+}
+
 func (s *Stock) RenameStock(r RenameCmd) (e Rename, err error) {
 	s.Name = r.Name
 	e = Rename{r.Name}
@@ -62,6 +71,7 @@ func (s *Stock) RenameStock(r RenameCmd) (e Rename, err error) {
 type InCmd ItemsCmd
 type OutCmd ItemsCmd
 type InventoryCmd ItemsCmd
+type MinimumCmd ItemsCmd
 type RenameCmd struct {
 	Name string
 }
@@ -85,6 +95,10 @@ func (i InventoryCmd) ID() string {
 	return i.StockName
 }
 
+func (i MinimumCmd) ID() string {
+	return i.StockName
+}
+
 type Rename struct {
 	Name string
 }
@@ -92,6 +106,7 @@ type Rename struct {
 type In ItemsAct
 type Out ItemsAct
 type Inventory ItemsAct
+type Minimum ItemsAct
 
 type ItemsAct struct {
 	items.Items

@@ -42,6 +42,8 @@
   translation: stock
 - id: file_name_stock_in
   translation: in
+- id: file_name_stock_minimum
+  translation: minimum
 - id: file_name_stock_out
   translation: out
 - id: file_name_to_order

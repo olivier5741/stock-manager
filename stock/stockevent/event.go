@@ -20,6 +20,11 @@ type InventorySubmitted struct {
 	Inventory, Stock items.Items
 }
 
+type MinimumUpdated struct {
+	StockEvt
+	Minimum, Stock items.Items
+}
+
 type StockEvt struct {
 	StockName string
 	Date      time.Time

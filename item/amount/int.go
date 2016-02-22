@@ -6,6 +6,8 @@ import (
 	"github.com/olivier5741/stock-manager/item/quant"
 	"sort"
 	"strconv"
+	"fmt"
+	"math"
 )
 
 // Amount represents an amount which consists of several quantities
@@ -37,6 +39,11 @@ func FromStringSlice(l []string) Amount {
 	// could put this in quant ...
 	var quants []quant.Quant
 	for i := 0; i < len(l); i = i + 2 {
+
+		if l[i] == "" {
+			continue // empty string, should be filtered before
+		}
+
 		val, _ := strconv.Atoi(l[i])
 		quants = append(quants, quant.Quant{quant.NewUnit(l[i+1]), val})
 	}
@@ -78,46 +85,49 @@ func Add(a1, a2 Amount) Amount {
 }
 
 // Sub creates a new amount by subtracting a2 from a1
-// TODO : more explanation
+// TODO : WHEN QUANTITIES NOT PRESENT AFTER, NOT ACTING VERY WELL
+// Il faut rajouter les quantité inconnues de a2 dans a1
 func Sub(a1, a2 Amount) Amount {
 	out := a1.Copy()
 	out = valByValSub(out, a2.quantsWithout())
 	for _, q := range a2.QuantsWithByFactAsc() {
-		if old, ok := out.quants[q.ID()]; !ok {
-			out.quants[q.ID()] = quant.Quant{q.Unit, -q.Val}
-		} else {
-			if old.Val >= q.Val || q.Val > out.TotalWith() {
-				out.quants[q.ID()] = quant.Sub(old, q)
+
+		old, ok := out.quants[q.ID()]
+
+		if !ok {
+			out.quants[q.ID()] = quant.Quant{q.Unit, 0}
+		}
+
+		if old.Val >= q.Val || q.Val > out.TotalWith() {
+			out.quants[q.ID()] = quant.Sub(old, q)
+			continue
+		}
+		current := out.QuantsWithByFactAsc()
+		needed := quant.TrimSliceOnTotal(current, q.Total())
+		sort.Sort(quant.ByFactDesc(needed))
+		missing := q.Total()
+		for i, n := range needed {
+			left := quant.SliceTotal(needed[i+1:])
+
+			if left == missing {
 				continue
 			}
-			current := out.QuantsWithByFactAsc()
-			needed := quant.TrimSliceOnTotal(current, q.Total())
-			sort.Sort(quant.ByFactDesc(needed))
-			missing := q.Total()
-			for i, n := range needed {
-				left := quant.SliceTotal(needed[i+1:])
 
-				if left == missing {
-					continue
+			tosub := missing / n.Fact
+
+			if left < missing {
+				tosub = (missing - left) / n.Fact
+				if tosub*n.Fact != missing-left {
+					tosub++
 				}
-
-				tosub := missing / n.Fact
-
-				if left < missing {
-					tosub = (missing - left) / n.Fact
-					if tosub*n.Fact != missing-left {
-						tosub++
-					}
-				}
-
-				out.quants[n.ID()] = n.NewSub(tosub)
-				missing -= tosub * n.Fact
-			}
-			if missing > 0 {
-				valByValSub(out, map[string]quant.Quant{q.ID(): {q.Unit, missing}})
 			}
 
+			out.quants[n.ID()] = n.NewSub(tosub)
+			missing -= tosub * n.Fact
 		}
+		if missing > 0 {
+			valByValSub(out, map[string]quant.Quant{q.ID(): {q.Unit, missing}})
+		}		
 	}
 
 	return out
@@ -129,6 +139,8 @@ func Sub(a1, a2 Amount) Amount {
 // TODO  Perhaps delete noWithout
 func Diff(a1, a2 Amount) (out Amount, noWithout bool, diff int) {
 	out = Sub(a1, a2).Redistribute()
+	fmt.Println("without")
+	fmt.Println(out.quantsWithout())
 	noWithout = len(out.quantsWithout()) == 0
 	diff = out.TotalWith()
 	return
@@ -172,12 +184,16 @@ func (am Amount) Total() Amount {
 }
 
 // TotalWithRound returns TODO
-func (am Amount) TotalWithRound(u quant.Unit) quant.QuantFloat {
+func (am Amount) TotalWithRound1(u quant.Unit) int { // rename
 	t := 0.0
 	for _, q := range am.quantsWith() {
 		t += float64(q.Total()) / float64(u.Fact)
 	}
-	return quant.QuantFloat{u, t}
+	return int(math.Ceil(t))
+}
+
+func (am Amount) TotalWithRound(u quant.Unit) Amount{
+	return NewAmount(quant.Quant{u,am.TotalWithRound1(u)})
 }
 
 // TotalWith returns TODO

@@ -39,6 +39,8 @@ var (
 			return true, endPt.HandleOut, repo
 		case stock.InventoryCmd:
 			return true, endPt.HandleInventory, repo
+		case stock.MinimumCmd:
+			return true, endPt.HandleMinimum, repo
 		default:
 			return false, nil, nil
 		}
@@ -91,6 +93,8 @@ func main() {
 			cmd = stock.OutCmd{stockId, its, s.Name.Time()}
 		case asset.Tr("file_name_inventory"):
 			cmd = stock.InventoryCmd{stockId, its, s.Name.Time()}
+		case asset.Tr("file_name_stock_minimum"):
+			cmd = stock.MinimumCmd{stockId, its, s.Name.Time()}
 		default:
 			log.Error(asset.Tr("no_action_for_filename_error"))
 		}
@@ -102,6 +106,11 @@ func main() {
 	// POPULATE VIEW
 	stockInt, err4 := endPt.Db.Get("main")
 	iStock := stockInt.(*stock.Stock).Items
+	min := stockInt.(*stock.Stock).Min
+	fmt.Println("MINIMUM")
+	fmt.Println(min)
+	fmt.Println("MISSING")
+	fmt.Println(items.Missing(iStock,min))
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
@@ -121,6 +130,11 @@ func main() {
 		prodValRender}.Put(files)
 
 	sheet.Sheet{
+		sheet.NewBasicFilename(asset.Tr("file_name_order")),
+		strtab.NewT(prodValHeader, items.Missing(iStock,min).StringSlice()...).Sort(),
+		prodValRender}.Put(files)
+
+	sheet.Sheet{
 		sheet.NewDraftFilename(3, asset.Tr("file_name_inventory")),
 		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(),
 		prodValRender}.Put(files)
@@ -133,6 +147,11 @@ func main() {
 	sheet.Sheet{
 		sheet.NewDraftFilename(2, asset.Tr("file_name_stock_out")),
 		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(),
+		prodValRender}.Put(files)
+
+	sheet.Sheet{
+		sheet.NewDraftFilename(4, asset.Tr("file_name_stock_minimum")),
+		strtab.NewT(prodValHeader, min.Empty().StringSlice()...).Sort(),
 		prodValRender}.Put(files)
 
 	sheet.Sheet{
