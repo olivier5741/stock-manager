@@ -3,7 +3,6 @@ package stock
 import (
 	"github.com/olivier5741/stock-manager/item/items"
 	"github.com/olivier5741/stock-manager/skelet"
-	"fmt"
 )
 
 type Stock struct {
@@ -50,8 +49,6 @@ func FromActions(acts []interface{}, id string) skelet.Ider {
 		case ProdsUpdate:
 			s.Min = act.Mins.Copy()
 			s.Items = items.Add(s.Items,act.Units)
-			fmt.Println("Stock after products update")
-			fmt.Println(s)
 		case Rename:
 			s.Name = act.Name
 		}

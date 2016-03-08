@@ -103,14 +103,14 @@ func main() {
 		fmt.Println(s.Name)
 
 		switch s.Name.Act {
-		case inN, outN, invN:
-			its = items.FromStringTable(s.Table.GetContentWithRowHeader())
-			fallthrough
 		case inN:
+			its = items.FromStringTable(s.Table.GetContentWithRowHeader())
 			cmd = stock.InCmd{stockId, its, s.Name.Time()}
 		case outN:
+			its = items.FromStringTable(s.Table.GetContentWithRowHeader())
 			cmd = stock.OutCmd{stockId, its, s.Name.Time()}
 		case invN:
+			its = items.FromStringTable(s.Table.GetContentWithRowHeader())
 			cmd = stock.InventoryCmd{stockId, its, s.Name.Time()}
 		case updateN:
 			mins,units := stock.ProdsUpdateFromStringTable(s.Table.GetContentWithRowHeader())
@@ -136,19 +136,22 @@ func main() {
 	prodValRender := func(tab *strtab.T) [][]string {
 		return tab.GetContentWithHeaders(false)
 	}
-	//prodEvolRender := func(tab *strtab.T) [][]string {
-	//	return tab.GetContentWithHeaders(true)
-	//}
+	prodEvolRender := func(tab *strtab.T) [][]string {
+		return tab.GetContentWithHeaders(true)
+	}
 
 	sheet.Sheet{
 		sheet.NewBasicFilename(asset.Tr("file_name_stock")),
 		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(),
 		prodValRender}.Put(rickyAnalyse)
 
-	// sheet.Sheet{
-	// 	sheet.NewBasicFilename(asset.Tr("file_name_order")),
-	// 	strtab.NewT(prodValHeader, items.Missing(iStock,min).StringSlice()...).Sort(),
-	// 	prodValRender}.Put(mickyAcquire)
+
+	fmt.Println("MIN")
+	fmt.Println(min)
+	sheet.Sheet{
+		sheet.NewBasicFilename(asset.Tr("file_name_order")),
+		strtab.NewT(prodValHeader, items.Missing(iStock,min).StringSlice()...).Sort(),
+		prodValRender}.Put(mickyAcquire)
 
 	sheet.Sheet{
 		sheet.NewDraftFilename(3, asset.Tr("file_name_inventory")),
@@ -170,10 +173,10 @@ func main() {
 		strtab.NewT(prodValHeader, min.Empty().StringSlice()...).Sort(),
 		prodValRender}.Put(rickyAcquire)
 
-	// sheet.Sheet{
-	// 	sheet.NewBasicFilename(asset.Tr("file_name_product_evolution")),
-	// 	strtab.NewTfromMap(items.ItemsMapToStringMapTable(
-	// 		endPt.ProdValEvol("main"))).Sort().Transpose().Sort(),
-	// 	prodEvolRender}.Put(rickyAnalyse)
+	sheet.Sheet{
+		sheet.NewBasicFilename(asset.Tr("file_name_product_evolution")),
+		strtab.NewTfromMap(items.ItemsMapToStringMapTable(
+			endPt.ProdValEvol("main"))).Sort().Transpose().Sort(),
+		prodEvolRender}.Put(rickyAnalyse)
 }
 

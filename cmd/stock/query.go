@@ -4,7 +4,6 @@ import (
 	"github.com/olivier5741/stock-manager/item/items"
 	"github.com/olivier5741/stock-manager/skelet"
 	"github.com/olivier5741/stock-manager/stock"
-	"fmt"
 )
 
 func (endPt EndPt) ProdValEvol(id string) (data map[string]items.Items) {
@@ -15,9 +14,9 @@ func (endPt EndPt) ProdValEvol(id string) (data map[string]items.Items) {
 	state := make(items.Items, 0)
 
 	i := 0
+
 loop:
 	for _, a := range acts {
-		fmt.Println(a)
 		switch act := a.(skelet.Event).Act.(type) {
 		case stock.In:
 			state = items.Add(state, act.Items)

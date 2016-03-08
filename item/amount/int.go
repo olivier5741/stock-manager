@@ -7,6 +7,7 @@ import (
 	"sort"
 	"math"
 	"math/big"
+	"fmt"
 )
 
 // Amount represents an amount which consists of several quantities
@@ -43,8 +44,8 @@ func FromStringSlice(l []string) Amount {
 			continue // empty string, should be filtered before
 		}
 
-		val,_ := new(big.Rat).SetString(l[i])
-		quants = append(quants, quant.Quant{quant.NewUnit(l[i+1]), val})
+		//val,_ := new(big.Rat).SetString(l[i])
+		quants = append(quants, quant.Quant{quant.NewUnit(l[i+1]), quant.StringToRat(l[i])})
 	}
 	return NewAmount(quants...)
 }
@@ -100,6 +101,7 @@ func Sub(a1, a2 Amount) Amount {
 
 		if !ok {
 			out.quants[q.ID()] = quant.Quant{q.Unit, &big.Rat{}}
+			continue
 		}
 
 		if old.Val.Cmp(q.Val) >= 0 || q.Val.Cmp(out.TotalWith()) > 0 {
@@ -123,7 +125,7 @@ func Sub(a1, a2 Amount) Amount {
 			if left.Cmp(missing) < 0 {
 				tosub = IntDiv(new(big.Rat).Sub(missing,left),n.Fact)
 				if new(big.Rat).Mul(tosub,n.Fact).Cmp(new(big.Rat).Sub(missing,left)) != 0 {
-					tosub.Add(tosub,big.NewRat(1,1))
+					tosub = new(big.Rat).Add(tosub,big.NewRat(1,1))
 				}
 			}
 
@@ -143,6 +145,10 @@ func Sub(a1, a2 Amount) Amount {
 // of this quantity
 // TODO  Perhaps delete noWithout
 func Diff(a1, a2 Amount) (out Amount, noWithout bool, diff *big.Rat) {
+	fmt.Println("SUB RESULT")
+	fmt.Println(a1)
+	fmt.Println(a2)
+	fmt.Println(Sub(a1, a2))
 	out = Sub(a1, a2).Redistribute()
 	noWithout = len(out.quantsWithout()) == 0
 	diff = out.TotalWith()
@@ -165,7 +171,7 @@ func (am Amount) Redistribute() Amount {
 			a,_ := new(big.Rat).Quo(left,l.Fact).Float64()
 			div := new(big.Rat).SetFloat64(math.Floor(a))
 			list[l.ID()] = list[l.ID()].NewAdd(div)
-			left.Sub(left,new(big.Rat).Mul(div,l.Fact))
+			left = new(big.Rat).Sub(left,new(big.Rat).Mul(div,l.Fact))
 		}
 	}
 	return Amount{list}
@@ -193,7 +199,7 @@ func (am Amount) Total() Amount {
 func (am Amount) TotalWithRound1(u quant.Unit) *big.Rat { // rename
 	t := &big.Rat{}
 	for _, q := range am.quantsWith() {
-		t.Add(t,new(big.Rat).Quo(q.Total(),u.Fact))
+		t = new(big.Rat).Add(t,new(big.Rat).Quo(q.Total(),u.Fact))
 	}
 	f,_ := t.Float64()
 	return  new(big.Rat).SetFloat64(math.Ceil(f))
@@ -207,7 +213,7 @@ func (am Amount) TotalWithRound(u quant.Unit) Amount{
 func (am Amount) TotalWith() *big.Rat {
 	t := &big.Rat{}
 	for _, q := range am.quantsWith() {
-		t.Add(t,q.Total())
+		t = new(big.Rat).Add(t,q.Total())
 	}
 	return t
 }

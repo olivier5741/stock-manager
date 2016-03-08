@@ -3,6 +3,7 @@ package quant
 import (
 	"strings"
 	"math/big"
+	"fmt"
 )
 
 // Unit a unit with a name and a factor (must be a factor of smallest
@@ -23,7 +24,7 @@ func (u Unit) ID() string {
 
 // String returns the unit its name and its factor between parentheses
 func (u Unit) String() string {
-	return u.Name + "(" + u.Fact.String() + ")"
+	return u.Name + "(" + RatToString(u.Fact) + ")"
 }
 
 // NewUnit creates a new unit from a string, see 'String()'
@@ -35,7 +36,7 @@ func NewUnit(s string) Unit {
 		u.Name = ss[0]
 	}
 	if len(ss) > 1 {
-		u.Fact.SetString(ss[1])
+		u.Fact = StringToRat(ss[1])
 	}
 	return u
 }
@@ -54,9 +55,23 @@ type Quant struct {
 	Val *big.Rat
 }
 
+func StringToRat(s string) *big.Rat {
+	out := new(big.Rat)
+	_, _ = fmt.Sscan(s, out)
+	return out
+}
+
+func RatToString(r *big.Rat) string {
+	if r.IsInt() {
+		return r.FloatString(0)
+	}else {
+		return r.FloatString(3)
+	}
+}
+
 // String returns the value and unit of the quantity
 func (q Quant) String() string {
-	return q.Val.String() + " " + q.Unit.String()
+	return RatToString(q.Val) + " " + q.Unit.String()
 }
 
 // Total returns the unit factor by the value of the quantity
@@ -84,7 +99,7 @@ func (q Quant) NewSub(sub *big.Rat) Quant {
 // NewSet creates a quantity based on q
 // and sets its value to set
 func (q Quant) NewSet(set *big.Rat) Quant {
-	return Quant{q.Unit, set}
+	return Quant{q.Unit, new(big.Rat).Add(&big.Rat{},set)}
 }
 
 // Add creates a quantity based on q1

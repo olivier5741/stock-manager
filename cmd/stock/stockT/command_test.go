@@ -22,7 +22,7 @@ func TestMain(t *testing.T) {
 		T:     stock.OutCmd{"Carlsbourg", items.Items{IsoK: Iso1}, "2016-01-28"},
 		Route: stockRoute,
 	}
-
+	
 	cmd3 := skelet.Cmd{
 		T:     stock.InventoryCmd{"Carlsbourg", items.Items{IsoK: Iso2}, "2016-01-29"},
 		Route: stockRoute,

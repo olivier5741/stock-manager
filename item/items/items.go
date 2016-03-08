@@ -5,6 +5,7 @@ package items
 import (
 	"github.com/olivier5741/stock-manager/item"
 	"github.com/olivier5741/stock-manager/item/amount"
+	"github.com/olivier5741/stock-manager/item/quant"
 	"math/big"
 )
 
@@ -119,7 +120,7 @@ func ItemsMapToStringMapTable(itsmap map[string]Items) map[string]map[string]str
 	for date, its := range itsmap {
 		newRow := make(map[string]string)
 		for prod, it := range its {
-			newRow[prod] = it.Amount.TotalWith().FloatString(2)
+			newRow[prod] = quant.RatToString(it.Amount.TotalWith())
 		}
 		out[date] = newRow
 	}

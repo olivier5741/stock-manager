@@ -2,6 +2,7 @@ package item
 
 import (
 	"github.com/olivier5741/stock-manager/item/amount"
+	"github.com/olivier5741/stock-manager/item/quant"
 )
 
 // Item  with related product and the value
@@ -29,7 +30,7 @@ func (it Item) StringSlice(unitNb int) []string {
 		if count == unitNb*2+1 {
 			break
 		}
-		s[count] = u.Val.FloatString(2) // TODO: is this correct
+		s[count] = quant.RatToString(u.Val) // TODO: is this correct
 		s[count+1] = u.Unit.String()
 		count += 2
 	}
