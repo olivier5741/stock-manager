@@ -20,9 +20,9 @@ type InventorySubmitted struct {
 	Inventory, Stock items.Items
 }
 
-type MinimumUpdated struct {
+type ProdsUpdated struct {
 	StockEvt
-	Minimum, Stock items.Items
+	Mins, Prods, Stock items.Items
 }
 
 type StockEvt struct {

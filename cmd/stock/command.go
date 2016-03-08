@@ -49,16 +49,16 @@ func (endPt *EndPt) HandleInventory(agg interface{}, cmd interface{}) (event ske
 		inv.Items, s.Items}, nil
 }
 
-func (endPt *EndPt) HandleMinimum(agg interface{}, cmd interface{}) (event skelet.Event, extEvent interface{}, err error) {
+func (endPt *EndPt) HandleProdsUpdate(agg interface{}, cmd interface{}) (event skelet.Event, extEvent interface{}, err error) {
 	s := agg.(*stock.Stock)
-	cmdMin := cmd.(stock.MinimumCmd)
+	cmdProdsUpdate := cmd.(stock.ProdsUpdateCmd)
 
-	min, err := s.UpdateMinimum(cmdMin)
+	prodsUpdate, err := s.UpdateProds(cmdProdsUpdate)
 	if err != nil {
 		return skelet.Event{}, nil, err
 	}
 
-	return skelet.Event{cmdMin.Date, min}, stockevent.MinimumUpdated{
+	return skelet.Event{cmdProdsUpdate.Date, prodsUpdate}, stockevent.ProdsUpdated{
 		stockevent.StockEvt{s.Name, time.Now()},
-		min.Items, s.Items}, nil
+		prodsUpdate.Mins, prodsUpdate.Units, s.Items}, nil
 }

@@ -29,7 +29,7 @@ type Filename struct {
 }
 
 func NewBasicFilename(s string) Filename {
-	return Filename{Bypass: generatedPrefix + s}
+	return Filename{Bypass: s}
 }
 
 func NewFilename(s BasicFilename) (Filename, error) {

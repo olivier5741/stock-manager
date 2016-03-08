@@ -6,7 +6,6 @@ import (
 	"github.com/olivier5741/stock-manager/item/quant"
 	"sort"
 	"strconv"
-	"fmt"
 	"math"
 )
 
@@ -139,8 +138,6 @@ func Sub(a1, a2 Amount) Amount {
 // TODO  Perhaps delete noWithout
 func Diff(a1, a2 Amount) (out Amount, noWithout bool, diff int) {
 	out = Sub(a1, a2).Redistribute()
-	fmt.Println("without")
-	fmt.Println(out.quantsWithout())
 	noWithout = len(out.quantsWithout()) == 0
 	diff = out.TotalWith()
 	return

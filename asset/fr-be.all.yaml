@@ -36,14 +36,14 @@
   translation: erreurs
 - id: file_name_order
   translation: commande
-- id: file_name_product
-  translation: produits
+- id: file_name_product_evolution
+  translation: évolution produit
+- id: file_name_product_update
+  translation: produit màj
 - id: file_name_stock
   translation: stock
 - id: file_name_stock_in
   translation: entree
-- id: file_name_stock_minimum
-  translation: minimum
 - id: file_name_stock_out
   translation: sortie
 - id: file_name_to_order

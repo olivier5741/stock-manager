@@ -3,12 +3,30 @@ package stock
 import (
 	"github.com/olivier5741/stock-manager/item/items"
 	"github.com/olivier5741/stock-manager/skelet"
+	"fmt"
 )
 
 type Stock struct {
 	Name string
 	items.Items
 	Min items.Items
+}
+
+func ProdsUpdateFromStringTable(t [][]string) (mins items.Items, units items.Items) {
+	var minsTable, unitsTable [][]string
+
+	for _,row := range t {
+		minsTable = append(minsTable,[]string{row[0],row[1],row[2]})
+		units := []string{row[0]}
+		for _,u := range row[3:]{
+			units = append(units,"0",u)
+		}
+		unitsTable = append(unitsTable,units)
+	}
+
+	return items.FromStringTable(minsTable),
+		items.FromStringTable(unitsTable)
+	
 }
 
 func MakeStock(name string) skelet.Ider {
@@ -29,8 +47,11 @@ func FromActions(acts []interface{}, id string) skelet.Ider {
 			s.Items = items.Sub(s.Items, act.Items)
 		case Inventory:
 			s.Items = act.Items.Copy()
-		case Minimum:
-			s.Min = act.Items.Copy()
+		case ProdsUpdate:
+			s.Min = act.Mins.Copy()
+			s.Items = items.Add(s.Items,act.Units)
+			fmt.Println("Stock after products update")
+			fmt.Println(s)
 		case Rename:
 			s.Name = act.Name
 		}
@@ -56,9 +77,10 @@ func (s *Stock) SubmitInventory(i InventoryCmd) (e Inventory, err error) {
 	return
 }
 
-func (s *Stock) UpdateMinimum(i MinimumCmd) (e Minimum, err error) {
-	s.Min = i.Items
-	e = Minimum{i.Items}
+func (s *Stock) UpdateProds(p ProdsUpdateCmd) (e ProdsUpdate, err error) {
+	s.Min = p.Mins
+	s.Items = items.Add(s.Items,p.Units)
+	e = ProdsUpdate{p.Mins,p.Units}
 	return
 }
 
@@ -71,15 +93,22 @@ func (s *Stock) RenameStock(r RenameCmd) (e Rename, err error) {
 type InCmd ItemsCmd
 type OutCmd ItemsCmd
 type InventoryCmd ItemsCmd
-type MinimumCmd ItemsCmd
-type RenameCmd struct {
-	Name string
-}
 
 type ItemsCmd struct {
 	StockName string
 	items.Items
 	Date string
+}
+
+type ProdsUpdateCmd struct {
+	StockName string
+	Mins items.Items
+	Units items.Items
+	Date string
+}
+
+type RenameCmd struct {
+	Name string
 }
 
 // code duplication !! Initialization is different when type is composed
@@ -95,7 +124,7 @@ func (i InventoryCmd) ID() string {
 	return i.StockName
 }
 
-func (i MinimumCmd) ID() string {
+func (i ProdsUpdateCmd) ID() string {
 	return i.StockName
 }
 
@@ -106,7 +135,10 @@ type Rename struct {
 type In ItemsAct
 type Out ItemsAct
 type Inventory ItemsAct
-type Minimum ItemsAct
+type ProdsUpdate struct {
+	Mins items.Items
+	Units items.Items // should be of another type
+}
 
 type ItemsAct struct {
 	items.Items

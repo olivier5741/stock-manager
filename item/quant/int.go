@@ -1,8 +1,8 @@
 package quant
 
 import (
-	"strconv"
 	"strings"
+	"math/big"
 )
 
 // Unit a unit with a name and a factor (must be a factor of smallest
@@ -10,9 +10,14 @@ import (
 //
 // A system is for instance all the units a particular product can have
 // ibuprofen : pill, tab, box, ...
+
+var(
+	dum *big.Rat
+)
+
 type Unit struct {
 	Name string
-	Fact int
+	Fact *big.Rat
 }
 
 // ID returns the unique ID of the unit in the system
@@ -22,72 +27,80 @@ func (u Unit) ID() string {
 
 // String returns the unit its name and its factor between parentheses
 func (u Unit) String() string {
-	return u.Name + "(" + strconv.Itoa(u.Fact) + ")"
+	return u.Name + "(" + u.Fact.String() + ")"
 }
 
 // NewUnit creates a new unit from a string, see 'String()'
 func NewUnit(s string) Unit {
 	s = strings.TrimSuffix(s, ")")
 	ss := strings.Split(s, "(")
-	u := Unit{"unknown", 0}
+	u := Unit{"unknown", &big.Rat{}}
 	if len(ss) > 0 {
 		u.Name = ss[0]
 	}
 	if len(ss) > 1 {
-		u.Fact, _ = strconv.Atoi(ss[1])
+		u.Fact.SetString(ss[1])
 	}
 	return u
+}
+
+func NewUnits(list []string) []Unit {
+	var out []Unit
+	for _,it := range list {
+		out = append(out, NewUnit(it))
+	}
+	return out
 }
 
 // Quant represents a quantity with unit and value (int)
 type Quant struct {
 	Unit
-	Val int
+	Val *big.Rat
 }
 
 // String returns the value and unit of the quantity
 func (q Quant) String() string {
-	return strconv.Itoa(q.Val) + " " + q.Unit.String()
+	return q.Val.String() + " " + q.Unit.String()
 }
 
 // Total returns the unit factor by the value of the quantity
-func (q Quant) Total() int {
-	return q.Fact * q.Val
+func (q Quant) Total() *big.Rat {
+	return dum.Mul(q.Fact,q.Val)
 }
 
 // Empty creates a quantity based on q
 func (q Quant) Empty() Quant {
-	return Quant{q.Unit, 0}
+	return Quant{q.Unit, big.NewRat(0,1)}
 }
 
 // NewAdd creates a quantity based on q
 // and setsg its value to the sum of q value and add
-func (q Quant) NewAdd(add int) Quant {
-	return Quant{q.Unit, q.Val + add}
+func (q Quant) NewAdd(add *big.Rat) Quant {
+	return Quant{q.Unit, dum.Add(q.Val,add)}
 }
 
 // NewSub creates a quantity based on q
 // and sets its value to the subtraction of sub to q value
-func (q Quant) NewSub(sub int) Quant {
-	return Quant{q.Unit, q.Val - sub}
+func (q Quant) NewSub(sub *big.Rat) Quant {
+	return Quant{q.Unit, dum.Sub(q.Val,sub)}
 }
 
 // NewSet creates a quantity based on q
 // and sets its value to set
-func (q Quant) NewSet(set int) Quant {
+func (q Quant) NewSet(set *big.Rat) Quant {
 	return Quant{q.Unit, set}
 }
 
 // Add creates a quantity based on q1
 // and sets its value to the sum of q1 value and q2 value
 func Add(q1, q2 Quant) Quant {
-	return Quant{q1.Unit, q1.Val + q2.Val}
+	return Quant{q1.Unit, dum.Add(q1.Val,q2.Val)}
 }
 
 // Sub creates a quantity based on q2
 // and sets its value to the subtraction of q2 value to q1 value
 func Sub(q1, q2 Quant) Quant {
-	return Quant{q1.Unit, q1.Val - q2.Val}
+	return Quant{q1.Unit, dum.Sub(q1.Val,q2.Val)}
 }
 
 // MapToSlice returns a slice quantities from a map of  quantities
@@ -100,20 +113,20 @@ func MapToSlice(m map[string]Quant) []Quant {
 }
 
 // SliceTotal returns the sum of all quantities total
-func SliceTotal(qs []Quant) int {
-	var total int
+func SliceTotal(qs []Quant) *big.Rat {
+	var total *big.Rat
 	for _, v := range qs {
-		total += v.Total()
+		total.Add(total,v.Total())
 	}
 	return total
 }
 
 // TrimSliceOnTotal trims quantities until the sum of their total reach lim
-func TrimSliceOnTotal(qs []Quant, lim int) []Quant {
+func TrimSliceOnTotal(qs []Quant, lim *big.Rat) []Quant {
 	var out []Quant
 	for _, v := range qs {
 		out = append(out, v)
-		if SliceTotal(out) >= lim {
+		if SliceTotal(out).Cmp(lim) >= 0 {
 			return out
 		}
 	}
@@ -134,11 +147,11 @@ type ByFactDesc []Quant
 
 func (f ByFactDesc) Len() int           { return len(f) }
 func (f ByFactDesc) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
-func (f ByFactDesc) Less(i, j int) bool { return f[i].Fact > f[j].Fact }
+func (f ByFactDesc) Less(i, j int) bool { return f[i].Fact.Cmp(f[j].Fact) > 0 }
 
 // ByFactAsc sorts quantities by ascending unit factor
 type ByFactAsc []Quant
 
 func (f ByFactAsc) Len() int           { return len(f) }
 func (f ByFactAsc) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
-func (f ByFactAsc) Less(i, j int) bool { return f[i].Fact < f[j].Fact }
+func (f ByFactAsc) Less(i, j int) bool { return f[i].Fact.Cmp(f[j].Fact) < 0 }

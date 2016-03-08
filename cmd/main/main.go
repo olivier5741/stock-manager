@@ -10,8 +10,8 @@ import (
 	"github.com/olivier5741/stock-manager/skelet"
 	"github.com/olivier5741/stock-manager/stock"
 	"github.com/olivier5741/stock-manager/port/sheet"
-//	"github.com/olivier5741/stock-manager/port/sheet/osfile"
-	"github.com/olivier5741/stock-manager/port/sheet/drivefile"
+	"github.com/olivier5741/stock-manager/port/sheet/osfile"
+//	"github.com/olivier5741/stock-manager/port/sheet/drivefile"
 	"github.com/olivier5741/strtab"
 	"fmt"
 )
@@ -20,13 +20,22 @@ import (
 // GOOS=windows GOARCH=386 go build -o stock-manager-0.1.exe c-main.go
 
 var (
+
+	rickyFolder = "test-ricky/"
+	mickyFolder = "test-micky/"
+	dasdboardData = "données dashboard/"
+
 	loggingPrefix  = "l-"
 
-	//files = osfile.OsFile{"./"}
-	files = drivefile.DriveFile{
-		"0BzIZ3dfuz-CEN2dfQ1liU0x6eVU",
-		drivefile.GetService(),
-		make(map[string]string)}
+	rickyAcquire = osfile.OsFile{rickyFolder}
+	rickyAnalyse = osfile.OsFile{rickyFolder+dasdboardData}
+	mickyAcquire = osfile.OsFile{mickyFolder}
+	//mickyAnalyse = osfile.OsFile{mickyFolder+"/"+dasdboardData}
+	//mickyRepo = osfile.OsFile{mickyFolder,dasdboardData}
+	// files = drivefile.DriveFile{
+	// 	"0BzIZ3dfuz-CEN2dfQ1liU0x6eVU",
+	// 	drivefile.GetService(),
+	// 	make(map[string]string)}
 
 	repo  = stockCmd.MakeDummyStockRepo()
 	endPt = stockCmd.EndPt{Db: repo}
@@ -39,8 +48,8 @@ var (
 			return true, endPt.HandleOut, repo
 		case stock.InventoryCmd:
 			return true, endPt.HandleInventory, repo
-		case stock.MinimumCmd:
-			return true, endPt.HandleMinimum, repo
+		case stock.ProdsUpdateCmd:
+			return true, endPt.HandleProdsUpdate, repo
 		default:
 			return false, nil, nil
 		}
@@ -74,27 +83,38 @@ func main() {
 
 	log.SetOutput(f)
 	log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.ErrorLevel)
+	log.SetLevel(log.DebugLevel)
 
 	// UPDATE 
-	all := sheet.AllSheets(files)
+	all := sheet.AllSheets(rickyAcquire)
 
 	for _,name := range all {
-		s := sheet.NewSheet(name,files)
-		its := items.FromStringTable(s.Table.GetContentWithRowHeader())
-		var cmd skelet.Ider
 
+		var(
+			cmd skelet.Ider
+			its items.Items
+			inN = asset.Tr("file_name_stock_in")
+			outN = asset.Tr("file_name_stock_out")
+			invN = asset.Tr("file_name_inventory")
+			updateN = asset.Tr("file_name_product_update")
+		)
+
+		s := sheet.NewSheet(name,rickyAcquire)
 		fmt.Println(s.Name)
 
 		switch s.Name.Act {
-		case asset.Tr("file_name_stock_in"):
+		case inN, outN, invN:
+			its = items.FromStringTable(s.Table.GetContentWithRowHeader())
+			fallthrough
+		case inN:
 			cmd = stock.InCmd{stockId, its, s.Name.Time()}
-		case asset.Tr("file_name_stock_out"):
+		case outN:
 			cmd = stock.OutCmd{stockId, its, s.Name.Time()}
-		case asset.Tr("file_name_inventory"):
+		case invN:
 			cmd = stock.InventoryCmd{stockId, its, s.Name.Time()}
-		case asset.Tr("file_name_stock_minimum"):
-			cmd = stock.MinimumCmd{stockId, its, s.Name.Time()}
+		case updateN:
+			mins,units := stock.ProdsUpdateFromStringTable(s.Table.GetContentWithRowHeader())
+			cmd = stock.ProdsUpdateCmd{stockId, mins, units, s.Name.Time()}
 		default:
 			log.Error(asset.Tr("no_action_for_filename_error"))
 		}
@@ -107,10 +127,6 @@ func main() {
 	stockInt, err4 := endPt.Db.Get("main")
 	iStock := stockInt.(*stock.Stock).Items
 	min := stockInt.(*stock.Stock).Min
-	fmt.Println("MINIMUM")
-	fmt.Println(min)
-	fmt.Println("MISSING")
-	fmt.Println(items.Missing(iStock,min))
 	if err4 != nil {
 		log.WithFields(log.Fields{
 			"err": err4,
@@ -127,37 +143,37 @@ func main() {
 	sheet.Sheet{
 		sheet.NewBasicFilename(asset.Tr("file_name_stock")),
 		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(),
-		prodValRender}.Put(files)
+		prodValRender}.Put(rickyAnalyse)
 
 	sheet.Sheet{
 		sheet.NewBasicFilename(asset.Tr("file_name_order")),
 		strtab.NewT(prodValHeader, items.Missing(iStock,min).StringSlice()...).Sort(),
-		prodValRender}.Put(files)
+		prodValRender}.Put(mickyAcquire)
 
 	sheet.Sheet{
 		sheet.NewDraftFilename(3, asset.Tr("file_name_inventory")),
 		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(),
-		prodValRender}.Put(files)
+		prodValRender}.Put(rickyAcquire)
 
 	sheet.Sheet{
 		sheet.NewDraftFilename(1, asset.Tr("file_name_stock_in")),
 		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(),
-		prodValRender}.Put(files)
+		prodValRender}.Put(rickyAcquire)
 
 	sheet.Sheet{
 		sheet.NewDraftFilename(2, asset.Tr("file_name_stock_out")),
 		strtab.NewT(prodValHeader, iStock.Empty().StringSlice()...).Sort(),
-		prodValRender}.Put(files)
+		prodValRender}.Put(rickyAcquire)
 
 	sheet.Sheet{
-		sheet.NewDraftFilename(4, asset.Tr("file_name_stock_minimum")),
+		sheet.NewDraftFilename(4, asset.Tr("file_name_product_update")),
 		strtab.NewT(prodValHeader, min.Empty().StringSlice()...).Sort(),
-		prodValRender}.Put(files)
+		prodValRender}.Put(rickyAcquire)
 
 	sheet.Sheet{
-		sheet.NewBasicFilename(asset.Tr("file_name_product")),
+		sheet.NewBasicFilename(asset.Tr("file_name_product_evolution")),
 		strtab.NewTfromMap(items.ItemsMapToStringMapTable(
 			endPt.ProdValEvol("main"))).Sort().Transpose().Sort(),
-		prodEvolRender}.Put(files)
+		prodEvolRender}.Put(rickyAnalyse)
 }
 

@@ -7,6 +7,7 @@ import(
 	"strings"
 	log "github.com/Sirupsen/logrus"
 	"github.com/olivier5741/stock-manager/asset"
+	"github.com/olivier5741/stock-manager/port/sheet"
 )
 
 var(
@@ -18,9 +19,9 @@ type OsFile struct{
 	Dir string // "./" as default
 }
 
-func (o OsFile) GetAll() []string {
+func (o OsFile) GetAll() []sheet.BasicFilename{
 
-	var out []string
+	var out []sheet.BasicFilename
 	files, err := ioutil.ReadDir(o.Dir)
 
 	if err != nil {
@@ -36,19 +37,19 @@ func (o OsFile) GetAll() []string {
 			continue
 		}
 
-		out = append(out,strings.TrimSuffix(file.Name(),extension))
+		id := strings.TrimSuffix(file.Name(),extension)
+		out = append(out,sheet.BasicFilename{id,id})	
 	}
-
 	return out
 }
 
-func (o OsFile) NewReader(name string) io.ReadCloser {
+func (o OsFile) NewReader(name sheet.BasicFilename) io.ReadCloser {
 
-	r, err := os.OpenFile(o.Dir + name + extension, os.O_CREATE, 0666)
+	r, err := os.OpenFile(o.Dir + name.Name + extension, os.O_CREATE, 0666)
 	
 	if err != nil {
 		log.WithFields(log.Fields{
-		 	"filepath": o.Dir + name + extension,
+		 	"filepath": o.Dir + name.Name + extension,
 		 	"err":      err,
 		}).Error(asset.Tr("error_file_open"))
 	}
@@ -56,12 +57,12 @@ func (o OsFile) NewReader(name string) io.ReadCloser {
 	return r
 }
 
-func (o OsFile) NewWriter(name string) io.WriteCloser {
-	w, err := os.Create(o.Dir + name + extension)
+func (o OsFile) NewWriter(name sheet.BasicFilename) io.WriteCloser {
+	w, err := os.Create(o.Dir + name.Name + extension)
 
 	if err != nil {
 		log.WithFields(log.Fields{
-			"filepath": o.Dir + name + extension,
+			"filepath": o.Dir + name.Name + extension,
 			"err":      err,
 		}).Error(asset.Tr("create_file_error"))
 	}
