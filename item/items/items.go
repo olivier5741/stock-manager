@@ -5,7 +5,7 @@ package items
 import (
 	"github.com/olivier5741/stock-manager/item"
 	"github.com/olivier5741/stock-manager/item/amount"
-	"strconv"
+	"math/big"
 )
 
 // Items a list of items
@@ -48,7 +48,7 @@ func Missing(its, exps Items) Items {
 	out := map[string]item.Item{}
 	for key, exp := range exps {
 		if it, ok := its[key]; ok {
-			if diff, no, intDiff := amount.Diff(exp.Amount, it.Amount); no && intDiff > 0 {
+			if diff, no, intDiff := amount.Diff(exp.Amount, it.Amount); no && intDiff.Cmp(&big.Rat{}) > 0 {
 				out[key] = item.Item{it.Prod, diff.TotalWithRound(exp.Amount.QuantsWithByFactAsc()[0].Unit)} // TODO : could be better
 			}
 		} else {
@@ -119,7 +119,7 @@ func ItemsMapToStringMapTable(itsmap map[string]Items) map[string]map[string]str
 	for date, its := range itsmap {
 		newRow := make(map[string]string)
 		for prod, it := range its {
-			newRow[prod] = strconv.Itoa(it.Amount.TotalWith())
+			newRow[prod] = it.Amount.TotalWith().FloatString(2)
 		}
 		out[date] = newRow
 	}

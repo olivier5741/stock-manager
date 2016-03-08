@@ -5,8 +5,8 @@ package amount
 import (
 	"github.com/olivier5741/stock-manager/item/quant"
 	"sort"
-	"strconv"
 	"math"
+	"math/big"
 )
 
 // Amount represents an amount which consists of several quantities
@@ -43,7 +43,7 @@ func FromStringSlice(l []string) Amount {
 			continue // empty string, should be filtered before
 		}
 
-		val, _ := strconv.Atoi(l[i])
+		val,_ := new(big.Rat).SetString(l[i])
 		quants = append(quants, quant.Quant{quant.NewUnit(l[i+1]), val})
 	}
 	return NewAmount(quants...)
@@ -54,7 +54,7 @@ func FromStringSlice(l []string) Amount {
 func (am Amount) Empty() Amount {
 	list := make(map[string]quant.Quant, 0)
 	for k, q := range am.quants {
-		list[k] = q.NewSet(0)
+		list[k] = q.NewSet(&big.Rat{})
 	}
 	return Amount{list}
 }
@@ -65,7 +65,7 @@ func (am Amount) Empty() Amount {
 func (am Amount) Neg() Amount {
 	list := make(map[string]quant.Quant, 0)
 	for _, q := range am.Quants() {
-		list[q.ID()] = q.NewSet(-q.Val)
+		list[q.ID()] = q.NewSet(new(big.Rat).Neg(q.Val))
 	}
 	return Amount{list}
 }
@@ -83,6 +83,11 @@ func Add(a1, a2 Amount) Amount {
 	return out
 }
 
+func IntDiv(i1, i2 *big.Rat) *big.Rat {
+	f,_ := new(big.Rat).Quo(i1,i2).Float64()
+	return new(big.Rat).SetFloat64(math.Floor(f))
+}
+
 // Sub creates a new amount by subtracting a2 from a1
 // TODO : WHEN QUANTITIES NOT PRESENT AFTER, NOT ACTING VERY WELL
 // Il faut rajouter les quantité inconnues de a2 dans a1
@@ -94,10 +99,10 @@ func Sub(a1, a2 Amount) Amount {
 		old, ok := out.quants[q.ID()]
 
 		if !ok {
-			out.quants[q.ID()] = quant.Quant{q.Unit, 0}
+			out.quants[q.ID()] = quant.Quant{q.Unit, &big.Rat{}}
 		}
 
-		if old.Val >= q.Val || q.Val > out.TotalWith() {
+		if old.Val.Cmp(q.Val) >= 0 || q.Val.Cmp(out.TotalWith()) > 0 {
 			out.quants[q.ID()] = quant.Sub(old, q)
 			continue
 		}
@@ -106,25 +111,26 @@ func Sub(a1, a2 Amount) Amount {
 		sort.Sort(quant.ByFactDesc(needed))
 		missing := q.Total()
 		for i, n := range needed {
+			
 			left := quant.SliceTotal(needed[i+1:])
 
-			if left == missing {
+			if left.Cmp(missing) == 0 {
 				continue
 			}
 
-			tosub := missing / n.Fact
+			tosub := IntDiv(missing,n.Fact)
 
-			if left < missing {
-				tosub = (missing - left) / n.Fact
-				if tosub*n.Fact != missing-left {
-					tosub++
+			if left.Cmp(missing) < 0 {
+				tosub = IntDiv(new(big.Rat).Sub(missing,left),n.Fact)
+				if new(big.Rat).Mul(tosub,n.Fact).Cmp(new(big.Rat).Sub(missing,left)) != 0 {
+					tosub.Add(tosub,big.NewRat(1,1))
 				}
 			}
 
 			out.quants[n.ID()] = n.NewSub(tosub)
-			missing -= tosub * n.Fact
+			missing.Sub(missing,new(big.Rat).Mul(tosub,n.Fact))
 		}
-		if missing > 0 {
+		if missing.Cmp(&big.Rat{}) > 0 {
 			valByValSub(out, map[string]quant.Quant{q.ID(): {q.Unit, missing}})
 		}		
 	}
@@ -136,7 +142,7 @@ func Sub(a1, a2 Amount) Amount {
 // and also returns if this amount as a single quantity and the value
 // of this quantity
 // TODO  Perhaps delete noWithout
-func Diff(a1, a2 Amount) (out Amount, noWithout bool, diff int) {
+func Diff(a1, a2 Amount) (out Amount, noWithout bool, diff *big.Rat) {
 	out = Sub(a1, a2).Redistribute()
 	noWithout = len(out.quantsWithout()) == 0
 	diff = out.TotalWith()
@@ -146,17 +152,20 @@ func Diff(a1, a2 Amount) (out Amount, noWithout bool, diff int) {
 // Redistribute creates an amount by redistributing
 // parts of possible quantities values of am
 // to a quantity with a higher factor
+// TODO : Rational and modulo not playing nice I think
 func (am Amount) Redistribute() Amount {
 	list := am.quantsWithout()
 	var lasts []quant.Quant
-	left := 0
+	left := &big.Rat{}
 	for _, q := range am.QuantsWithByFactDesc() {
 		list[q.ID()] = q.Empty()
 		lasts = append(lasts, q.Empty())
-		left += q.Total()
+		left.Add(left,q.Total())
 		for _, l := range lasts {
-			list[l.ID()] = list[l.ID()].NewAdd(left / l.Fact)
-			left = left % l.Fact
+			a,_ := new(big.Rat).Quo(left,l.Fact).Float64()
+			div := new(big.Rat).SetFloat64(math.Floor(a))
+			list[l.ID()] = list[l.ID()].NewAdd(div)
+			left.Sub(left,new(big.Rat).Mul(div,l.Fact))
 		}
 	}
 	return Amount{list}
@@ -168,25 +177,26 @@ func (am Amount) Redistribute() Amount {
 func (am Amount) Total() Amount {
 	out := Amount{am.quantsWithout()}
 	with := am.QuantsWithByFactDesc()
-	t := 0
+	t := &big.Rat{}
 	for _, q := range with {
-		t += q.Total()
+		t.Add(t,q.Total())
 	}
 	if len(with) > 0 {
 		smallest := with[len(with)-1]
 		out.quants[smallest.ID()] =
-			smallest.NewSet(t / smallest.Fact)
+			smallest.NewSet(new(big.Rat).Quo(t,smallest.Fact))
 	}
 	return out
 }
 
 // TotalWithRound returns TODO
-func (am Amount) TotalWithRound1(u quant.Unit) int { // rename
-	t := 0.0
+func (am Amount) TotalWithRound1(u quant.Unit) *big.Rat { // rename
+	t := &big.Rat{}
 	for _, q := range am.quantsWith() {
-		t += float64(q.Total()) / float64(u.Fact)
+		t.Add(t,new(big.Rat).Quo(q.Total(),u.Fact))
 	}
-	return int(math.Ceil(t))
+	f,_ := t.Float64()
+	return  new(big.Rat).SetFloat64(math.Ceil(f))
 }
 
 func (am Amount) TotalWithRound(u quant.Unit) Amount{
@@ -194,10 +204,10 @@ func (am Amount) TotalWithRound(u quant.Unit) Amount{
 }
 
 // TotalWith returns TODO
-func (am Amount) TotalWith() int {
-	var t int
+func (am Amount) TotalWith() *big.Rat {
+	t := &big.Rat{}
 	for _, q := range am.quantsWith() {
-		t += q.Total()
+		t.Add(t,q.Total())
 	}
 	return t
 }
@@ -231,7 +241,7 @@ func valByValSub(am Amount, qs map[string]quant.Quant) Amount {
 		if old, ok := out.quants[q.ID()]; ok {
 			out.quants[q.ID()] = quant.Sub(old, q)
 		} else {
-			out.quants[q.ID()] = quant.Quant{q.Unit, -q.Val}
+			out.quants[q.ID()] = quant.Quant{q.Unit, new(big.Rat).Neg(q.Val)}
 		}
 	}
 	return out
@@ -241,7 +251,7 @@ func (am Amount) valsFactFilter() (with, without map[string]quant.Quant) {
 	with = make(map[string]quant.Quant, 0)
 	without = make(map[string]quant.Quant, 0)
 	for _, q := range am.quants {
-		if q.Fact != 0 {
+		if q.Fact.Cmp(&big.Rat{}) != 0 {
 			with[q.ID()] = q
 		} else {
 			without[q.ID()] = q

@@ -11,10 +11,6 @@ import (
 // A system is for instance all the units a particular product can have
 // ibuprofen : pill, tab, box, ...
 
-var(
-	dum *big.Rat
-)
-
 type Unit struct {
 	Name string
 	Fact *big.Rat
@@ -65,24 +61,24 @@ func (q Quant) String() string {
 
 // Total returns the unit factor by the value of the quantity
 func (q Quant) Total() *big.Rat {
-	return dum.Mul(q.Fact,q.Val)
+	return new(big.Rat).Mul(q.Fact,q.Val)
 }
 
 // Empty creates a quantity based on q
 func (q Quant) Empty() Quant {
-	return Quant{q.Unit, big.NewRat(0,1)}
+	return Quant{q.Unit, &big.Rat{}}
 }
 
 // NewAdd creates a quantity based on q
 // and setsg its value to the sum of q value and add
 func (q Quant) NewAdd(add *big.Rat) Quant {
-	return Quant{q.Unit, dum.Add(q.Val,add)}
+	return Quant{q.Unit, new(big.Rat).Add(q.Val,add)}
 }
 
 // NewSub creates a quantity based on q
 // and sets its value to the subtraction of sub to q value
 func (q Quant) NewSub(sub *big.Rat) Quant {
-	return Quant{q.Unit, dum.Sub(q.Val,sub)}
+	return Quant{q.Unit, new(big.Rat).Sub(q.Val,sub)}
 }
 
 // NewSet creates a quantity based on q
@@ -94,13 +90,13 @@ func (q Quant) NewSet(set *big.Rat) Quant {
 // Add creates a quantity based on q1
 // and sets its value to the sum of q1 value and q2 value
 func Add(q1, q2 Quant) Quant {
-	return Quant{q1.Unit, dum.Add(q1.Val,q2.Val)}
+	return Quant{q1.Unit, new(big.Rat).Add(q1.Val,q2.Val)}
 }
 
 // Sub creates a quantity based on q2
 // and sets its value to the subtraction of q2 value to q1 value
 func Sub(q1, q2 Quant) Quant {
-	return Quant{q1.Unit, dum.Sub(q1.Val,q2.Val)}
+	return Quant{q1.Unit, new(big.Rat).Sub(q1.Val,q2.Val)}
 }
 
 // MapToSlice returns a slice quantities from a map of  quantities
@@ -114,7 +110,7 @@ func MapToSlice(m map[string]Quant) []Quant {
 
 // SliceTotal returns the sum of all quantities total
 func SliceTotal(qs []Quant) *big.Rat {
-	var total *big.Rat
+	total := &big.Rat{}
 	for _, v := range qs {
 		total.Add(total,v.Total())
 	}

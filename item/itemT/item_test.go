@@ -4,21 +4,22 @@ import (
 	"github.com/olivier5741/stock-manager/item/amount"
 	"github.com/olivier5741/stock-manager/item/quant"
 	"testing"
+	"math/big"
 )
 
 func TestAddVal(t *testing.T) {
 	v1 := amount.NewAmount([]quant.Quant{
-		{Pillule, 12},
-		{Tablette, 2},
-		{Boite, 2},
-		{Carton, 1},
+		{Pillule, new(big.Rat).SetInt64(12)},
+		{Tablette, new(big.Rat).SetInt64(2)},
+		{Boite, new(big.Rat).SetInt64(2)},
+		{Carton, new(big.Rat).SetInt64(1)},
 	}...)
 
 	t.Log(v1.String())
 
 	v2 := amount.NewAmount([]quant.Quant{
-		{Tablette, 3},
-		{Boite, 2},
+		{Tablette, new(big.Rat).SetInt64(3)},
+		{Boite, new(big.Rat).SetInt64(2)},
 	}...)
 
 	t.Log(v2.String())
@@ -29,10 +30,10 @@ func TestAddVal(t *testing.T) {
 	t.Log(got.TotalWithRound(Carton))
 
 	exp := amount.NewAmount([]quant.Quant{
-		{Pillule, 12},
-		{Tablette, 5},
-		{Boite, 4},
-		{Carton, 1},
+		{Pillule, new(big.Rat).SetInt64(12)},
+		{Tablette, new(big.Rat).SetInt64(5)},
+		{Boite, new(big.Rat).SetInt64(4)},
+		{Carton, new(big.Rat).SetInt64(1)},
 	}...)
 
 	ValEqualCheck(t, got, exp)
@@ -40,18 +41,18 @@ func TestAddVal(t *testing.T) {
 
 func TestSub(t *testing.T) {
 	v1 := amount.NewAmount([]quant.Quant{
-		{Pillule, 12},
-		{Tablette, 2},
-		{Boite, 2},
-		{Carton, 1},
+		{Pillule, new(big.Rat).SetInt64(12)},
+		{Tablette, new(big.Rat).SetInt64(2)},
+		{Boite, new(big.Rat).SetInt64(2)},
+		{Carton, new(big.Rat).SetInt64(1)},
 	}...)
 
 	t.Log(v1.String())
 
 	v2 := amount.NewAmount([]quant.Quant{
-		{Pillule, 16},
-		{Tablette, 3},
-		{Boite, 2},
+		{Pillule, new(big.Rat).SetInt64(16)},
+		{Tablette, new(big.Rat).SetInt64(3)},
+		{Boite, new(big.Rat).SetInt64(2)},
 	}...)
 
 	t.Log(v2.String())
@@ -62,10 +63,10 @@ func TestSub(t *testing.T) {
 	t.Log(got.TotalWithRound(Carton))
 
 	exp := amount.NewAmount([]quant.Quant{
-		{Pillule, 11},
-		{Tablette, 1},
-		{Boite, 9},
-		{Carton, 0},
+		{Pillule, new(big.Rat).SetInt64(11)},
+		{Tablette, new(big.Rat).SetInt64(1)},
+		{Boite, new(big.Rat).SetInt64(9)},
+		{Carton, new(big.Rat).SetInt64(0)},
 	}...)
 
 	ValEqualCheck(t, got, exp)
@@ -73,18 +74,18 @@ func TestSub(t *testing.T) {
 
 func TestDiff(t *testing.T) {
 	v1 := amount.NewAmount([]quant.Quant{
-		{Pillule, 12},
-		{Tablette, 40},
-		{Boite, 2},
-		{Carton, 1},
+		{Pillule, new(big.Rat).SetInt64(12)},
+		{Tablette, new(big.Rat).SetInt64(40)},
+		{Boite, new(big.Rat).SetInt64(2)},
+		{Carton, new(big.Rat).SetInt64(1)},
 	}...)
 
 	t.Log(v1.String())
 
 	v2 := amount.NewAmount([]quant.Quant{
-		{Pillule, 16},
-		{Tablette, 3},
-		{Boite, 2},
+		{Pillule, new(big.Rat).SetInt64(16)},
+		{Tablette, new(big.Rat).SetInt64(3)},
+		{Boite, new(big.Rat).SetInt64(2)},
 	}...)
 
 	t.Log(v2.String())
@@ -95,10 +96,10 @@ func TestDiff(t *testing.T) {
 	t.Log(got.TotalWithRound(Carton))
 
 	exp := amount.NewAmount([]quant.Quant{
-		{Carton, 2},
-		{Boite, 2},
-		{Tablette, 0},
-		{Pillule, 11},
+		{Carton, new(big.Rat).SetInt64(2)},
+		{Boite, new(big.Rat).SetInt64(2)},
+		{Tablette, new(big.Rat).SetInt64(0)},
+		{Pillule, new(big.Rat).SetInt64(11)},
 	}...)
 
 	ValEqualCheck(t, got, exp)
@@ -108,9 +109,9 @@ func TestRedistribute(t *testing.T) {
 	// l'unité principale ne peut valoir 0
 
 	v1 := amount.NewAmount([]quant.Quant{
-		{Pillule, 50},
-		{Tablette, 3},
-		{Boite, 2},
+		{Pillule, new(big.Rat).SetInt64(50)},
+		{Tablette, new(big.Rat).SetInt64(3)},
+		{Boite, new(big.Rat).SetInt64(2)},
 	}...)
 
 	t.Log(v1.String())
@@ -121,9 +122,9 @@ func TestRedistribute(t *testing.T) {
 	t.Log(got.TotalWithRound(Boite))
 
 	exp := amount.NewAmount([]quant.Quant{
-		{Pillule, 5},
-		{Tablette, 0},
-		{Boite, 4},
+		{Pillule, new(big.Rat).SetInt64(5)},
+		{Tablette, new(big.Rat).SetInt64(0)},
+		{Boite, new(big.Rat).SetInt64(4)},
 	}...)
 
 	ValEqualCheck(t, got, exp)
@@ -131,10 +132,10 @@ func TestRedistribute(t *testing.T) {
 
 func TestTotal(t *testing.T) {
 	v1 := amount.NewAmount([]quant.Quant{
-		{Inconnu, 21},
-		{Pillule, 50},
-		{Tablette, 3},
-		{Boite, 2},
+		{Inconnu, new(big.Rat).SetInt64(21)},
+		{Pillule, new(big.Rat).SetInt64(50)},
+		{Tablette, new(big.Rat).SetInt64(3)},
+		{Boite, new(big.Rat).SetInt64(2)},
 	}...)
 
 	t.Log(v1.String())
@@ -145,8 +146,8 @@ func TestTotal(t *testing.T) {
 	t.Log(got.TotalWithRound(Boite))
 
 	exp := amount.NewAmount([]quant.Quant{
-		{Inconnu, 21},
-		{Pillule, 185},
+		{Inconnu, new(big.Rat).SetInt64(21)},
+		{Pillule, new(big.Rat).SetInt64(185)},
 	}...)
 
 	ValEqualCheck(t, got, exp)

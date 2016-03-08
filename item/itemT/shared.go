@@ -4,14 +4,15 @@ import (
 	"github.com/olivier5741/stock-manager/item/amount"
 	"github.com/olivier5741/stock-manager/item/quant"
 	"testing"
+	"math/big"
 )
 
 var (
-	Inconnu  = quant.Unit{"inconnu", 0}
-	Pillule  = quant.Unit{"pill.", 1}
-	Tablette = quant.Unit{"tab.", 15}
-	Boite    = quant.Unit{"b.", 45}
-	Carton   = quant.Unit{"cart.", 450}
+	Inconnu  = quant.Unit{"inconnu", new(big.Rat).SetInt64(0)}
+	Pillule  = quant.Unit{"pill.", new(big.Rat).SetInt64(1)}
+	Tablette = quant.Unit{"tab.", new(big.Rat).SetInt64(15)}
+	Boite    = quant.Unit{"b.", new(big.Rat).SetInt64(45)}
+	Carton   = quant.Unit{"cart.", new(big.Rat).SetInt64(450)}
 )
 
 func ValEqualCheck(t *testing.T, gots, exps amount.Amount) {
@@ -33,11 +34,11 @@ func ValEqualCheck(t *testing.T, gots, exps amount.Amount) {
 }
 
 func UnitValCheck(t *testing.T, got, exp quant.Quant) {
-	if got.Fact != exp.Fact {
+	if got.Fact.Cmp(exp.Fact) != 0 {
 		t.Errorf("Fact %+v of unit %+v is not the same as expected %+v (unit %+v)", got.Fact, got, exp.Fact, exp)
 	}
 
-	if got.Val != exp.Val {
+	if got.Val.Cmp(exp.Val) != 0 {
 		t.Errorf("Val %+v of unit %+v is not the same as expected %+v (unit %+v)", got.Val, got, exp.Val, exp)
 	}
 }
