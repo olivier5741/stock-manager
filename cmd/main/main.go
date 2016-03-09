@@ -13,7 +13,6 @@ import (
 	"github.com/olivier5741/stock-manager/port/sheet/osfile"
 //	"github.com/olivier5741/stock-manager/port/sheet/drivefile"
 	"github.com/olivier5741/strtab"
-	"fmt"
 )
 
 // vim -u ~/.vimrc.go
@@ -23,9 +22,7 @@ var (
 
 	rickyFolder = "test-ricky/"
 	mickyFolder = "test-micky/"
-	dasdboardData = "données dashboard/"
-
-	loggingPrefix  = "l-"
+	dasdboardData = "données_dashboard/"
 
 	rickyAcquire = osfile.OsFile{rickyFolder}
 	rickyAnalyse = osfile.OsFile{rickyFolder+dasdboardData}
@@ -70,12 +67,11 @@ func main() {
 	}
 
 	// LOGGING
-	logfile := loggingPrefix + asset.Tr("file_name_log")
-	f, err1 := os.OpenFile(logfile,
+	f, err1 := os.OpenFile(asset.Tr("file_name_log"),
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err1 != nil {
 		log.WithFields(log.Fields{
-			"filename": logfile,
+			"filename": asset.Tr("file_name_log"),
 			"err":      err1,
 		}).Error(asset.Tr("error_file_open"))
 	}
@@ -83,7 +79,7 @@ func main() {
 
 	log.SetOutput(f)
 	log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.ErrorLevel)
 
 	// UPDATE 
 	all := sheet.AllSheets(rickyAcquire)
@@ -100,7 +96,6 @@ func main() {
 		)
 
 		s := sheet.NewSheet(name,rickyAcquire)
-		fmt.Println(s.Name)
 
 		switch s.Name.Act {
 		case inN:
@@ -117,8 +112,8 @@ func main() {
 			cmd = stock.ProdsUpdateCmd{stockId, mins, units, s.Name.Time()}
 		default:
 			log.Error(asset.Tr("no_action_for_filename_error"))
+			continue
 		}
-		fmt.Println(cmd)
 		skelet.ExecuteCommand(skelet.Cmd{T: cmd, Route: stockRoute}, stockCmd.Chain)
 	}
 
@@ -145,9 +140,6 @@ func main() {
 		strtab.NewT(prodValHeader, iStock.StringSlice()...).Sort(),
 		prodValRender}.Put(rickyAnalyse)
 
-
-	fmt.Println("MIN")
-	fmt.Println(min)
 	sheet.Sheet{
 		sheet.NewBasicFilename(asset.Tr("file_name_order")),
 		strtab.NewT(prodValHeader, items.Missing(iStock,min).StringSlice()...).Sort(),

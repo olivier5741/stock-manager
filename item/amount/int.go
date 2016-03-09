@@ -7,7 +7,6 @@ import (
 	"sort"
 	"math"
 	"math/big"
-	"fmt"
 )
 
 // Amount represents an amount which consists of several quantities
@@ -145,10 +144,6 @@ func Sub(a1, a2 Amount) Amount {
 // of this quantity
 // TODO  Perhaps delete noWithout
 func Diff(a1, a2 Amount) (out Amount, noWithout bool, diff *big.Rat) {
-	fmt.Println("SUB RESULT")
-	fmt.Println(a1)
-	fmt.Println(a2)
-	fmt.Println(Sub(a1, a2))
 	out = Sub(a1, a2).Redistribute()
 	noWithout = len(out.quantsWithout()) == 0
 	diff = out.TotalWith()

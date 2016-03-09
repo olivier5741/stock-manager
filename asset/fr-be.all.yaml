@@ -39,7 +39,7 @@
 - id: file_name_product_evolution
   translation: évolution produit
 - id: file_name_product_update
-  translation: produit màj
+  translation: produit_màj
 - id: file_name_stock
   translation: stock
 - id: file_name_stock_in

@@ -39,7 +39,7 @@
 - id: file_name_product_evolution
   translation: product evolution
 - id: file_name_product_update
-  translation: product update
+  translation: product_update
 - id: file_name_stock
   translation: stock
 - id: file_name_stock_in
