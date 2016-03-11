@@ -20,9 +20,9 @@ import (
 
 var (
 
-	rickyFolder = "test-ricky/"
-	mickyFolder = "test-micky/"
-	dasdboardData = "données_dashboard/"
+	rickyFolder = "stock-ricky/"
+	mickyFolder = "commande-micky/"
+	dasdboardData = "données-dashboard/"
 
 	rickyAcquire = osfile.OsFile{rickyFolder}
 	rickyAnalyse = osfile.OsFile{rickyFolder+dasdboardData}
@@ -141,7 +141,7 @@ func main() {
 		prodValRender}.Put(rickyAnalyse)
 
 	sheet.Sheet{
-		sheet.NewBasicFilename(asset.Tr("file_name_order")),
+		sheet.NewBasicFilename(asset.Tr("file_name_to_order")),
 		strtab.NewT(prodValHeader, items.Missing(iStock,min).StringSlice()...).Sort(),
 		prodValRender}.Put(mickyAcquire)
 
