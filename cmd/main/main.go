@@ -10,8 +10,10 @@ import (
 	"github.com/olivier5741/stock-manager/skelet"
 	"github.com/olivier5741/stock-manager/stock"
 	"github.com/olivier5741/stock-manager/port/sheet"
-	"github.com/olivier5741/stock-manager/port/sheet/osfile"
-//	"github.com/olivier5741/stock-manager/port/sheet/drivefile"
+//	"github.com/olivier5741/stock-manager/port/sheet/osfile"
+	"github.com/olivier5741/stock-manager/port/sheet/drivefile"
+	"net/http"
+	"github.com/codegangsta/negroni"
 	"github.com/olivier5741/strtab"
 )
 
@@ -20,19 +22,18 @@ import (
 
 var (
 
-	rickyFolder = "stock-ricky/"
-	mickyFolder = "commande-micky/"
-	dasdboardData = "données-dashboard/"
+	//rickyFolder = "stock-ricky/"
+	//mickyFolder = "commande-micky/"
+	//dasdboardData = "données-dashboard/"
 
-	rickyAcquire = osfile.OsFile{rickyFolder}
-	rickyAnalyse = osfile.OsFile{rickyFolder+dasdboardData}
-	mickyAcquire = osfile.OsFile{mickyFolder}
-	//mickyAnalyse = osfile.OsFile{mickyFolder+"/"+dasdboardData}
-	//mickyRepo = osfile.OsFile{mickyFolder,dasdboardData}
-	// files = drivefile.DriveFile{
-	// 	"0BzIZ3dfuz-CEN2dfQ1liU0x6eVU",
-	// 	drivefile.GetService(),
-	// 	make(map[string]string)}
+	//rickyAcquire = osfile.OsFile{rickyFolder}
+	//rickyAnalyse = osfile.OsFile{rickyFolder+dasdboardData}
+	//mickyAcquire = osfile.OsFile{mickyFolder}
+	//mickyAnalyse = osfile.OsFile{mickyFolder+dasdboardData}
+
+	rickyAcquire = drivefile.DriveFile{"0BzIZ3dfuz-CEQVg5YU1Ia0dMY3c", drivefile.GetService(), make(map[string]string)}
+	rickyAnalyse = drivefile.DriveFile{"0BzIZ3dfuz-CEaGh4OHFhWVBHZHc", drivefile.GetService(), make(map[string]string)}
+	mickyAcquire = drivefile.DriveFile{"0BzIZ3dfuz-CEU0lHYUdKTVJ5aXM", drivefile.GetService(), make(map[string]string)}
 
 	repo  = stockCmd.MakeDummyStockRepo()
 	endPt = stockCmd.EndPt{Db: repo}
@@ -58,6 +59,17 @@ var (
 )
 
 func main() {
+mux := http.NewServeMux()
+  mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+    action()
+  })
+
+  n := negroni.Classic()
+  n.UseHandler(mux)
+  n.Run(":3000")
+}
+
+func action() {
 
 	prodValHeader = []string{asset.Tr("csv_header_item_product"),
 		asset.Tr("csv_header_item_value", 1), asset.Tr("csv_header_item_unit", 1),
@@ -134,6 +146,10 @@ func main() {
 	prodEvolRender := func(tab *strtab.T) [][]string {
 		return tab.GetContentWithHeaders(true)
 	}
+
+	// not very good
+	sheet.AllSheets(rickyAnalyse)
+	sheet.AllSheets(mickyAcquire)
 
 	sheet.Sheet{
 		sheet.NewBasicFilename(asset.Tr("file_name_stock")),

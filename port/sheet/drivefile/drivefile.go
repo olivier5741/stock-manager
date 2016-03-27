@@ -14,7 +14,7 @@ import (
 	"bytes"
 	"golang.org/x/oauth2/google"
 
-	"io/ioutil"
+	//"io/ioutil"
 	"github.com/Sirupsen/logrus"
 	"github.com/olivier5741/stock-manager/asset"
 	"github.com/olivier5741/stock-manager/port/sheet"
@@ -98,14 +98,18 @@ func saveToken(file string, token *oauth2.Token) {
 }
 
 func GetService() *drive.Service {
+	
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("client_secret.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
+	// b, err := ioutil.ReadFile("client_secret.json")
+	// if err != nil {
+	// 	log.Fatalf("Unable to read client secret file: %v", err)
+	// }
 
-	config, err := google.ConfigFromJSON(b, drive.DriveScope)
+	secret := "9ETZTmHUuXpQY_swvLgBj8gk"
+	test := "{\"installed\":{\"client_id\":\"66141005511-f77j6p5ujnb3cdtr5gctobvgjtqg8825.apps.googleusercontent.com\",\"project_id\":\"formal-loop-119922\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://accounts.google.com/o/oauth2/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_secret\":\"" + secret + "\",\"redirect_uris\":[\"urn:ietf:wg:oauth:2.0:oob\",\"http://localhost\"]}}"
+	
+	config, err := google.ConfigFromJSON([]byte(test), drive.DriveScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
@@ -127,7 +131,7 @@ type DriveFile struct {
 
 func (d DriveFile) GetAll() []sheet.BasicFilename {
 	r, err := d.Service.Files.List().
-		Q("'" + d.Parent + "' in parents and mimeType='application/vnd.google-apps.spreadsheet'").
+		Q("'" + d.Parent + "' in parents and trashed = false and mimeType='application/vnd.google-apps.spreadsheet'").
 		Fields("nextPageToken, files(id, name)").Do()
 
 	if err != nil {
@@ -172,10 +176,6 @@ func (d DriveFile) NewWriter(h sheet.BasicFilename) io.WriteCloser {
 	id, exist := d.Names[h.Name]
 
 	return buff{&bytes.Buffer{}, GetService(), df, id, exist}
-
-}
-
-func (d DriveFile) Exists(name string) {
 
 }
 
