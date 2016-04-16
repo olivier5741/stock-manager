@@ -1,0 +1,6 @@
+{
+	"ImportPath": "github.com/olivier5741/stock-manager",
+	"GoVersion": "go1.5",
+	"GodepVersion": "v62",
+	"Deps": []
+}
